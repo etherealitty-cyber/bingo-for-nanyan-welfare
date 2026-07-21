@@ -2,10 +2,12 @@ import { useState } from "react";
 import { ArrowRight, CheckCircle } from "@phosphor-icons/react";
 import { login, session } from "../api";
 
-export function LoginPage({ onLoggedIn }: { onLoggedIn: () => void }) {
+export function LoginPage({ onLoggedIn, initialError = "" }: { onLoggedIn: () => void; initialError?: string }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const visibleError = error || initialError;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -47,11 +49,11 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: () => void }) {
           value={code}
           onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
           placeholder="请输入邀请码"
-          aria-describedby={error ? "login-error" : "login-help"}
-          aria-invalid={Boolean(error)}
+          aria-describedby={visibleError ? "login-error" : "login-help"}
+          aria-invalid={Boolean(visibleError)}
         />
         <p id="login-help" className="field-help">邀请码由工作人员在活动开始前发放。</p>
-        {error && <p id="login-error" className="field-error">{error}</p>}
+        {visibleError && <p id="login-error" className="field-error">{visibleError}</p>}
         <button className="primary-button" disabled={code.length !== 6 || loading}>
           {loading ? "正在进入" : "进入游戏"}
           {!loading && <ArrowRight size={19} weight="bold" />}

@@ -10,7 +10,7 @@ const ADMIN_TOKEN_KEY = "interest-bingo-admin";
 
 async function fetchJson<T>(url: string, init: RequestInit): Promise<T> {
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), 10_000);
+  const timeoutId = window.setTimeout(() => controller.abort(), 30_000);
   let response: Response;
   try {
     response = await fetch(url, {

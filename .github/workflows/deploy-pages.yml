@@ -27,7 +27,8 @@ jobs:
       - run: npm run test
       - run: npm run build
         env:
-          VITE_API_BASE_URL: https://interest-bingo-api.eternalwavee-bingo.workers.dev
+          VITE_SUPABASE_URL: https://jeaehpykauoqiaffntch.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_0eWOLMgv-Bf1oR-3Y7FsZQ_cTz7T25o
           VITE_BASE_PATH: /bingo-for-nanyan-welfare/
       - uses: actions/configure-pages@v5
         with:

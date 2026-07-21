@@ -15,6 +15,8 @@
     "db:clear-test:local": "wrangler d1 execute interest-bingo --local --file worker/reset-local-test.sql --config worker/wrangler.toml",
     "db:import-test:local": "wrangler d1 execute interest-bingo --local --file .private-data/import.sql --config worker/wrangler.toml",
     "data:prepare": "node scripts/prepare-data.mjs",
+    "supabase:prepare": "node scripts/prepare-supabase.mjs",
+    "test:supabase": "node scripts/test-supabase.mjs",
     "test:api": "node scripts/test-api.mjs"
   },
   "dependencies": {

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/create-static-routes.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "worker:dev": "wrangler dev --config worker/wrangler.toml",

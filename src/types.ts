@@ -1,4 +1,5 @@
 import type { Role } from "../shared/game";
+import type { Draft } from "../shared/game";
 
 export type Person = {
   id: string;
@@ -30,4 +31,41 @@ export type Ranking = {
   nickname: string;
   accuracy: number;
   submitted_at: string;
+};
+
+export type CloudDraft = {
+  entries: Draft;
+  updatedAt: string | null;
+};
+
+export type AdminParticipantSummary = {
+  id: string;
+  nickname: string;
+  role: Role;
+  status: "not_started" | "draft" | "submitted";
+  filled_count: number;
+  updated_at: string | null;
+  line_id: string | null;
+  accuracy: number | null;
+  valid: boolean | null;
+};
+
+export type AdminAuditChoice = {
+  participant_id: string;
+  nickname: string;
+  correct: boolean;
+};
+
+export type AdminAuditEntry = {
+  topic_id: string;
+  label: string;
+  special: boolean;
+  free: boolean;
+  yes: AdminAuditChoice | null;
+  no: AdminAuditChoice | null;
+};
+
+export type AdminParticipantDetail = {
+  participant: Omit<AdminParticipantSummary, "filled_count">;
+  entries: AdminAuditEntry[];
 };

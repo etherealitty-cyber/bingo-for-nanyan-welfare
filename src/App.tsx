@@ -3,12 +3,14 @@ import { AdminPage } from "./components/AdminPage";
 import { GamePage } from "./components/GamePage";
 import { LoginPage } from "./components/LoginPage";
 import { getGame, session } from "./api";
+import type { Draft } from "../shared/game";
 import type { LockedSubmission, Participant, Person } from "./types";
 
 type GameData = {
   participant: Participant;
   people: Person[];
   submission: LockedSubmission | null;
+  draft?: Draft;
 };
 
 export function App() {

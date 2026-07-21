@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowSquareOut, Check, LockKey, SignOut, UsersThree } from "@phosphor-icons/react";
 import {
   completedLines,
@@ -9,7 +9,7 @@ import {
   type Draft,
   type Topic,
 } from "../../shared/game";
-import { session, submitGame } from "../api";
+import { saveDraft, session, submitGame } from "../api";
 import type { LockedSubmission, Participant, Person } from "../types";
 import { CellEditor } from "./CellEditor";
 import { Leaderboard } from "./Leaderboard";
@@ -17,11 +17,12 @@ import { SubmitDialog } from "./SubmitDialog";
 
 const DRAFT_KEY = "interest-bingo-draft";
 
-function loadDraft(participantId: string): Draft {
+function loadDraft(participantId: string, cloudDraft: Draft = {}): Draft {
   try {
-    return JSON.parse(localStorage.getItem(`${DRAFT_KEY}:${participantId}`) ?? "{}");
+    const localDraft = JSON.parse(localStorage.getItem(`${DRAFT_KEY}:${participantId}`) ?? "{}");
+    return { ...cloudDraft, ...localDraft };
   } catch {
-    return {};
+    return cloudDraft;
   }
 }
 
@@ -100,24 +101,46 @@ export function GamePage({
   initialData,
   onLogout,
 }: {
-  initialData: { participant: Participant; people: Person[]; submission: LockedSubmission | null };
+  initialData: { participant: Participant; people: Person[]; submission: LockedSubmission | null; draft?: Draft };
   onLogout: () => void;
 }) {
-  const [draft, setDraft] = useState<Draft>(() => loadDraft(initialData.participant.id));
+  const [draft, setDraft] = useState<Draft>(() => loadDraft(initialData.participant.id, initialData.draft));
   const [activeTopic, setActiveTopic] = useState<Topic | null>(null);
   const [showSubmit, setShowSubmit] = useState(false);
   const [submission, setSubmission] = useState<LockedSubmission | null>(initialData.submission);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [draftSaveState, setDraftSaveState] = useState<"idle" | "saving" | "saved" | "offline">("idle");
+  const saveQueue = useRef<Promise<unknown>>(Promise.resolve());
   const completeLines = useMemo(() => completedLines(draft), [draft]);
   const bestLine = useMemo(() => validLines
     .map((line) => ({ line, progress: progressForLine(line, draft), total: totalSlots(line) }))
     .sort((a, b) => (b.progress / b.total) - (a.progress / a.total))[0], [draft]);
 
+  useEffect(() => {
+    if (submission || Object.keys(draft).length === 0) return;
+    const token = session.get();
+    if (!token) return;
+    const snapshot = draft;
+    const timer = window.setTimeout(() => {
+      setDraftSaveState("saving");
+      const task = saveQueue.current
+        .catch(() => undefined)
+        .then(() => saveDraft(token, snapshot));
+      saveQueue.current = task;
+      void task.then(
+        () => setDraftSaveState("saved"),
+        () => setDraftSaveState("offline"),
+      );
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [draft, submission]);
+
   function saveCell(topicId: string, entry: Draft[string]) {
     const next = { ...draft, [topicId]: entry };
     setDraft(next);
     localStorage.setItem(`${DRAFT_KEY}:${initialData.participant.id}`, JSON.stringify(next));
+    setDraftSaveState("saving");
     setActiveTopic(null);
   }
 
@@ -127,6 +150,8 @@ export function GamePage({
     setSubmitting(true);
     setSubmitError("");
     try {
+      await saveQueue.current.catch(() => undefined);
+      await saveDraft(token, draft);
       const result = await submitGame(token, lineId, draft);
       setSubmission(result.submission);
       localStorage.removeItem(`${DRAFT_KEY}:${initialData.participant.id}`);
@@ -157,6 +182,13 @@ export function GamePage({
             <div>
               <h1>{submission ? "你的 Bingo" : "完成一条有效线路"}</h1>
               <p>{submission ? "正式成绩已提交，棋盘不可再修改。" : "点击格子填写姓名，中心免费格已自动点亮。"}</p>
+              {!submission && draftSaveState !== "idle" && (
+                <small className={`draft-save-state ${draftSaveState}`}>
+                  {draftSaveState === "saving" && "正在保存到云端"}
+                  {draftSaveState === "saved" && "已自动保存到云端"}
+                  {draftSaveState === "offline" && "本机已保存，联网后将再次同步"}
+                </small>
+              )}
             </div>
             {!submission && bestLine && (
               <div className="progress-copy">

@@ -54,8 +54,11 @@ const answerValues = participants.flatMap((participant, index) => {
   });
 });
 
-const migration = await readFile(resolve("supabase/migrations/0001_bingo.sql"), "utf8");
-const setup = `begin;\n${migration}\n
+const migrations = await Promise.all([
+  "supabase/migrations/0001_bingo.sql",
+  "supabase/migrations/0002_live_drafts.sql",
+].map((path) => readFile(resolve(path), "utf8")));
+const setup = `begin;\n${migrations.join("\n")}\n
 insert into bingo_private.participants
   (id, nickname, role, invite_code_hash, eligible_for_prize)
 values\n${participantValues.join(",\n")};

@@ -1,5 +1,13 @@
 import type { Draft } from "../shared/game";
-import type { LockedSubmission, Participant, Person, Ranking } from "./types";
+import type {
+  AdminParticipantDetail,
+  AdminParticipantSummary,
+  CloudDraft,
+  LockedSubmission,
+  Participant,
+  Person,
+  Ranking,
+} from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
@@ -74,11 +82,20 @@ export async function login(code: string) {
 
 export async function getGame(token: string) {
   if (USE_SUPABASE) {
-    return rpc<{ participant: Participant; people: Person[]; submission: LockedSubmission | null }>("bingo_game", { p_token: token });
+    const game = await rpc<{ participant: Participant; people: Person[]; submission: LockedSubmission | null }>("bingo_game", { p_token: token });
+    const cloudDraft = await rpc<CloudDraft>("bingo_get_draft", { p_token: token });
+    return { ...game, draft: cloudDraft.entries };
   }
-  return request<{ participant: Participant; people: Person[]; submission: LockedSubmission | null }>(
+  return request<{ participant: Participant; people: Person[]; submission: LockedSubmission | null; draft?: Draft }>(
     "/api/game", {}, token,
   );
+}
+
+export async function saveDraft(token: string, draft: Draft) {
+  if (USE_SUPABASE) {
+    return rpc<{ updatedAt: string }>("bingo_save_draft", { p_token: token, p_entries: draft });
+  }
+  return { updatedAt: new Date().toISOString() };
 }
 
 export async function submitGame(token: string, lineId: string, draft: Draft) {
@@ -110,7 +127,7 @@ export async function adminLogin(password: string) {
 
 export async function getAdminOverview(token: string) {
   if (USE_SUPABASE) {
-    return rpc<{
+    const [overview, participantData] = await Promise.all([rpc<{
       stats: { participant_count: number; submission_count: number; valid_count: number };
       submissions: Array<{
         id: string;
@@ -123,9 +140,12 @@ export async function getAdminOverview(token: string) {
         valid: number;
         submitted_at: string;
       }>;
-    }>("bingo_admin_overview", { p_token: token });
+    }>("bingo_admin_overview", { p_token: token }), rpc<{ participants: AdminParticipantSummary[] }>(
+      "bingo_admin_participants", { p_token: token },
+    )]);
+    return { ...overview, participants: participantData.participants };
   }
-  return request<{
+  const overview = await request<{
     stats: { participant_count: number; submission_count: number; valid_count: number };
     submissions: Array<{
       id: string;
@@ -139,4 +159,15 @@ export async function getAdminOverview(token: string) {
       submitted_at: string;
     }>;
   }>("/api/admin/overview", {}, token);
+  return { ...overview, participants: [] as AdminParticipantSummary[] };
+}
+
+export async function getAdminParticipantDetail(token: string, participantId: string) {
+  if (USE_SUPABASE) {
+    return rpc<AdminParticipantDetail>("bingo_admin_participant_detail", {
+      p_token: token,
+      p_participant_id: participantId,
+    });
+  }
+  throw new Error("当前后端不支持棋盘详情");
 }

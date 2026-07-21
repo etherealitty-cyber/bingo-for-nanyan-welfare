@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getLeaderboard } from "../api";
+import { parseServerDate } from "../date";
 import type { Ranking } from "../types";
 
 function timeLabel(value: string): string {
@@ -8,7 +9,7 @@ function timeLabel(value: string): string {
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
-  }).format(new Date(`${value.replace(" ", "T")}Z`));
+  }).format(parseServerDate(value));
 }
 
 export function Leaderboard({ compact = false }: { compact?: boolean }) {

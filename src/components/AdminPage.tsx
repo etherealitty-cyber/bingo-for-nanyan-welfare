@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, LockKey, SignOut } from "@phosphor-icons/react";
 import { adminLogin, adminSession, getAdminOverview } from "../api";
+import { parseServerDate } from "../date";
 
 type Overview = Awaited<ReturnType<typeof getAdminOverview>>;
 
@@ -12,7 +13,7 @@ function formatDate(value: string): string {
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
-  }).format(new Date(`${value.replace(" ", "T")}Z`));
+  }).format(parseServerDate(value));
 }
 
 function AdminLogin({ onSuccess }: { onSuccess: () => void }) {

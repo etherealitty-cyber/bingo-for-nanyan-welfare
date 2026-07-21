@@ -1,0 +1,12 @@
+name = "interest-bingo-api"
+main = "src/index.ts"
+compatibility_date = "2025-07-18"
+
+[vars]
+ALLOWED_ORIGIN = "https://bingo-for-nanyan-welfare.pages.dev,https://bingo.lazysheep.site,https://etherealitty-cyber.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "interest-bingo"
+database_id = "912bbc73-cad0-4e70-a8d3-625ab09dc652"
+migrations_dir = "migrations"

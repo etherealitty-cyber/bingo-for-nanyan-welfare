@@ -1,0 +1,35 @@
+{
+  "name": "interest-bingo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "worker:dev": "wrangler dev --config worker/wrangler.toml",
+    "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
+    "db:migrate:local": "wrangler d1 migrations apply interest-bingo --local --config worker/wrangler.toml",
+    "db:seed:local": "wrangler d1 execute interest-bingo --local --file worker/seed.sql --config worker/wrangler.toml",
+    "db:clear-test:local": "wrangler d1 execute interest-bingo --local --file worker/reset-local-test.sql --config worker/wrangler.toml",
+    "db:import-test:local": "wrangler d1 execute interest-bingo --local --file .private-data/import.sql --config worker/wrangler.toml",
+    "data:prepare": "node scripts/prepare-data.mjs",
+    "test:api": "node scripts/test-api.mjs"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260714.1",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.0.6",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.26.0"
+  }
+}

@@ -1,5 +1,6 @@
 import type { Draft } from "../shared/game";
 import type {
+  AnswerDirectoryEntry,
   AdminParticipantDetail,
   AdminParticipantSummary,
   AdminAnswersDetail,
@@ -106,6 +107,13 @@ export async function getMyAnswers(token: string) {
     return rpc<{ answers: OwnAnswer[] }>("bingo_my_answers", { p_token: token });
   }
   return request<{ answers: OwnAnswer[] }>("/api/me/answers", {}, token);
+}
+
+export async function getAnswerDirectory(token: string) {
+  if (USE_SUPABASE) {
+    return rpc<{ topics: AnswerDirectoryEntry[] }>("bingo_answer_directory", { p_token: token });
+  }
+  throw new Error("当前后端不支持完整答案册");
 }
 
 export async function submitGame(token: string, lineId: string, draft: Draft) {

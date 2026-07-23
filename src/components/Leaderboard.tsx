@@ -40,43 +40,45 @@ export function Leaderboard({ compact = false }: { compact?: boolean }) {
   }, []);
 
   return (
-    <section className={`leaderboard ${compact ? "compact" : ""}`}>
-      <header>
-        <h2>实时排名</h2>
-        <span>每10秒更新</span>
-      </header>
-      {error && <p className="inline-error">{error}</p>}
-      {!error && rankings.length === 0 && <p className="empty-ranking">还没有有效成绩，第一名等你来。</p>}
-      <ol>
-        {rankings.map((item) => (
-          <li key={`${item.nickname}-${item.submitted_at}`} className={item.rank <= 3 ? "winner" : ""}>
-            <b>{item.rank}</b>
-            <strong>{item.nickname}</strong>
-            <span>{Math.round(item.accuracy * 100)}%</span>
-            <time>{timeLabel(item.submitted_at)}</time>
-          </li>
-        ))}
-      </ol>
-      <div className="support-ranking">
+    <>
+      <section className={`leaderboard ${compact ? "compact" : ""}`}>
         <header>
-          <h3>Staff &amp; Counselors</h3>
-          <span>仅作展示</span>
+          <h2>实时排名</h2>
+          <span>每10秒更新</span>
         </header>
-        {supportRankings.length === 0 ? (
-          <p>暂时还没有有效成绩。</p>
-        ) : (
-          <ol>
-            {supportRankings.map((item) => (
-              <li key={`${item.nickname}-${item.submitted_at}`}>
-                <b>{item.rank}</b>
-                <strong>{item.nickname}</strong>
-                <small>{item.role === "counselor" ? "辅导员" : "工作人员"}</small>
-                <span>{Math.round(item.accuracy * 100)}%</span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
-    </section>
+        {error && <p className="inline-error">{error}</p>}
+        {!error && rankings.length === 0 && <p className="empty-ranking">还没有有效成绩，第一名等你来。</p>}
+        <ol>
+          {rankings.map((item) => (
+            <li key={`${item.nickname}-${item.submitted_at}`} className={item.rank <= 3 ? "winner" : ""}>
+              <b>{item.rank}</b>
+              <strong>{item.nickname}</strong>
+              <span>{Math.round(item.accuracy * 100)}%</span>
+              <time>{timeLabel(item.submitted_at)}</time>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="support-leaderboard">
+        <header>
+          <h2>Staff &amp; Counselors</h2>
+          <span>按提交时间</span>
+        </header>
+        {error && <p className="inline-error">{error}</p>}
+        {!error && supportRankings.length === 0 && <p className="empty-ranking">还没有人提交成绩。</p>}
+        <ol>
+          {supportRankings.map((item) => (
+            <li key={`${item.nickname}-${item.submitted_at}`}>
+              <b>{item.rank}</b>
+              <strong>{item.nickname}</strong>
+              <span className={item.valid === false ? "invalid-score" : ""}>{Math.round(item.accuracy * 100)}%</span>
+              <small>{item.role === "counselor" ? "辅导员" : "工作人员"}</small>
+              <time>{timeLabel(item.submitted_at)}</time>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </>
   );
 }

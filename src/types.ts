@@ -35,6 +35,15 @@ export type Ranking = {
 
 export type SupportRanking = Ranking & {
   role: Exclude<Role, "camper">;
+  valid?: boolean;
+};
+
+export type AnswerDirectoryPerson = Pick<Person, "id" | "nickname" | "role">;
+
+export type AnswerDirectoryEntry = {
+  topic_id: string;
+  yes: AnswerDirectoryPerson[];
+  no: AnswerDirectoryPerson[];
 };
 
 export type CloudDraft = {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowSquareOut, Check, IdentificationCard, LockKey, SignOut, UsersThree } from "@phosphor-icons/react";
+import { ArrowSquareOut, BookOpen, Check, IdentificationCard, LockKey, SignOut, UsersThree } from "@phosphor-icons/react";
 import {
   completedLines,
   progressForLine,
@@ -9,9 +9,10 @@ import {
   type Draft,
   type Topic,
 } from "../../shared/game";
-import { getMyAnswers, saveDraft, session, submitGame } from "../api";
+import { getAnswerDirectory, getMyAnswers, saveDraft, session, submitGame } from "../api";
 import { shufflePeopleWithPinnedThird } from "../people";
-import type { LockedSubmission, OwnAnswer, Participant, Person } from "../types";
+import type { AnswerDirectoryEntry, LockedSubmission, OwnAnswer, Participant, Person } from "../types";
+import { AnswerDirectoryDialog } from "./AnswerDirectoryDialog";
 import { CellEditor } from "./CellEditor";
 import { Leaderboard } from "./Leaderboard";
 import { MyAnswersDialog } from "./MyAnswersDialog";
@@ -40,7 +41,7 @@ function normalizeSubmission(submission: LockedSubmission): LockedSubmission {
   };
 }
 
-function LockedResult({ submission }: { submission: LockedSubmission }) {
+function LockedResult({ submission, onOpenDirectory }: { submission: LockedSubmission; onOpenDirectory: () => void }) {
   const result = normalizeSubmission(submission);
   const valid = Boolean(result.valid);
   return (
@@ -53,6 +54,10 @@ function LockedResult({ submission }: { submission: LockedSubmission }) {
           答对 {result.correctCount}/{result.totalCount} 项，准确率 {Math.round(result.accuracy * 100)}%。
           {valid ? "营员有效成绩已进入排名。" : "本次不能修改或重新提交。"}
         </p>
+        <button type="button" className="text-button result-directory-button" onClick={onOpenDirectory}>
+          <BookOpen size={17} />
+          查看完整答案册
+        </button>
       </div>
     </section>
   );
@@ -91,8 +96,7 @@ function BoardCell({
       type="button"
       className={`board-cell ${topic.special ? "special-cell" : ""} ${complete ? "complete" : ""}`}
       onClick={onOpen}
-      disabled={locked}
-      aria-label={`${topic.label}${complete ? "，已填写" : "，未填写"}`}
+      aria-label={locked ? `${topic.label}，查看完整是/否名单` : `${topic.label}${complete ? "，已填写" : "，未填写"}`}
     >
       <strong>{topic.label}</strong>
       <span><i>是</i><b>{yes || "待填写"}</b></span>
@@ -117,6 +121,11 @@ export function GamePage({
   const [myAnswers, setMyAnswers] = useState<OwnAnswer[]>([]);
   const [myAnswersLoading, setMyAnswersLoading] = useState(false);
   const [myAnswersError, setMyAnswersError] = useState("");
+  const [showAnswerDirectory, setShowAnswerDirectory] = useState(false);
+  const [answerDirectoryTopicId, setAnswerDirectoryTopicId] = useState(topics[0].id);
+  const [answerDirectory, setAnswerDirectory] = useState<AnswerDirectoryEntry[]>([]);
+  const [answerDirectoryLoading, setAnswerDirectoryLoading] = useState(false);
+  const [answerDirectoryError, setAnswerDirectoryError] = useState("");
   const [submission, setSubmission] = useState<LockedSubmission | null>(initialData.submission);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -177,6 +186,29 @@ export function GamePage({
     }
   }
 
+  async function openAnswerDirectory(topicId = topics[0].id) {
+    if (!submission) return;
+    setAnswerDirectoryTopicId(topicId);
+    setShowAnswerDirectory(true);
+    if (answerDirectory.length === topics.length || answerDirectoryLoading) return;
+    const token = session.get();
+    if (!token) {
+      setAnswerDirectoryError("登录状态已失效，请重新登录");
+      return;
+    }
+    setAnswerDirectoryLoading(true);
+    setAnswerDirectoryError("");
+    try {
+      const result = await getAnswerDirectory(token);
+      if (result.topics.length !== topics.length) throw new Error("完整答案数据尚未配置完成");
+      setAnswerDirectory(result.topics);
+    } catch (caught) {
+      setAnswerDirectoryError(caught instanceof Error ? caught.message : "完整答案册读取失败");
+    } finally {
+      setAnswerDirectoryLoading(false);
+    }
+  }
+
   async function handleSubmit(lineId: string) {
     const token = session.get();
     if (!token) return;
@@ -218,7 +250,7 @@ export function GamePage({
           <div className="board-intro">
             <div>
               <h1>{submission ? "你的 Bingo" : "完成一条有效线路"}</h1>
-              <p>{submission ? "正式成绩已提交，棋盘不可再修改。" : "点击格子填写姓名，每格都需要填写“是”和“否”。"}</p>
+              <p>{submission ? "正式成绩已提交，点击任意格子可查看完整是/否名单。" : "点击格子填写姓名，每格都需要填写“是”和“否”。"}</p>
               {!submission && draftSaveState !== "idle" && (
                 <small className={`draft-save-state ${draftSaveState}`}>
                   {draftSaveState === "saving" && "正在保存到云端"}
@@ -235,7 +267,7 @@ export function GamePage({
             )}
           </div>
 
-          {submission && <LockedResult submission={submission} />}
+          {submission && <LockedResult submission={submission} onOpenDirectory={() => void openAnswerDirectory()} />}
 
           <section className="my-answer-banner">
             <div className="my-answer-banner-icon"><IdentificationCard size={26} weight="duotone" /></div>
@@ -256,7 +288,7 @@ export function GamePage({
                 draft={draft}
                 people={displayPeople}
                 locked={Boolean(submission)}
-                onOpen={() => setActiveTopic(topic)}
+                onOpen={() => submission ? void openAnswerDirectory(topic.id) : setActiveTopic(topic)}
               />
             ))}
           </div>
@@ -329,6 +361,16 @@ export function GamePage({
           loading={myAnswersLoading}
           error={myAnswersError}
           onClose={() => setShowMyAnswers(false)}
+        />
+      )}
+      {showAnswerDirectory && (
+        <AnswerDirectoryDialog
+          key={answerDirectoryTopicId}
+          entries={answerDirectory}
+          initialTopicId={answerDirectoryTopicId}
+          loading={answerDirectoryLoading}
+          error={answerDirectoryError}
+          onClose={() => setShowAnswerDirectory(false)}
         />
       )}
     </main>

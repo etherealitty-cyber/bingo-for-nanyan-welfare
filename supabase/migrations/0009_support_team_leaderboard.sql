@@ -34,6 +34,7 @@ as $$
         'nickname', ranked.nickname,
         'role', ranked.role,
         'accuracy', ranked.accuracy,
+        'valid', ranked.valid,
         'submitted_at', ranked.submitted_at
       ) order by ranked.rank), '[]'::jsonb)
       from (
@@ -42,11 +43,11 @@ as $$
           p.nickname,
           p.role,
           s.accuracy,
+          s.valid,
           s.submitted_at
         from bingo_private.submissions s
         join bingo_private.participants p on p.id = s.participant_id
-        where s.valid = true
-          and p.role in ('counselor', 'staff')
+        where p.role in ('counselor', 'staff')
         order by s.submitted_at
       ) ranked
     )

@@ -327,6 +327,26 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 .leaderboard li > time { grid-area: time; color: var(--muted); font-size: 10px; }
 .leaderboard li.winner > b { color: var(--accent-strong); font-size: 17px; }
 .empty-ranking { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 4px 0 0; }
+.support-ranking {
+  margin-top: 18px;
+  padding: 13px 14px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}
+.support-ranking header { margin-bottom: 6px; }
+.support-ranking h3 { margin: 0; font-size: 12px; }
+.support-ranking > p { margin: 10px 0 5px; color: var(--muted); font-size: 11px; }
+.support-ranking li {
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  grid-template-areas: "rank name score" "rank role score";
+  gap: 0 7px;
+  padding: 8px 0;
+}
+.support-ranking li > b { grid-area: rank; font-size: 11px; }
+.support-ranking li > strong { grid-area: name; font-size: 11px; }
+.support-ranking li > small { grid-area: role; color: var(--muted); font-size: 9px; }
+.support-ranking li > span { grid-area: score; align-self: center; font-size: 10px; }
 
 .locked-result { margin-bottom: 22px; padding: 18px 20px; border: 1px solid; border-radius: var(--radius-card); display: flex; gap: 16px; align-items: flex-start; }
 .locked-result.valid { background: var(--good-soft); border-color: #9ecbb9; }

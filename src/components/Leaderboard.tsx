@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getLeaderboard } from "../api";
 import { parseServerDate } from "../date";
-import type { Ranking } from "../types";
+import type { Ranking, SupportRanking } from "../types";
 
 function timeLabel(value: string): string {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -14,6 +14,7 @@ function timeLabel(value: string): string {
 
 export function Leaderboard({ compact = false }: { compact?: boolean }) {
   const [rankings, setRankings] = useState<Ranking[]>([]);
+  const [supportRankings, setSupportRankings] = useState<SupportRanking[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export function Leaderboard({ compact = false }: { compact?: boolean }) {
         const data = await getLeaderboard();
         if (active) {
           setRankings(data.rankings);
+          setSupportRankings(data.supportRankings ?? []);
           setError("");
         }
       } catch {
@@ -55,6 +57,26 @@ export function Leaderboard({ compact = false }: { compact?: boolean }) {
           </li>
         ))}
       </ol>
+      <div className="support-ranking">
+        <header>
+          <h3>Staff &amp; Counselors</h3>
+          <span>仅作展示</span>
+        </header>
+        {supportRankings.length === 0 ? (
+          <p>暂时还没有有效成绩。</p>
+        ) : (
+          <ol>
+            {supportRankings.map((item) => (
+              <li key={`${item.nickname}-${item.submitted_at}`}>
+                <b>{item.rank}</b>
+                <strong>{item.nickname}</strong>
+                <small>{item.role === "counselor" ? "辅导员" : "工作人员"}</small>
+                <span>{Math.round(item.accuracy * 100)}%</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </section>
   );
 }

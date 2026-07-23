@@ -33,6 +33,10 @@ export type Ranking = {
   submitted_at: string;
 };
 
+export type SupportRanking = Ranking & {
+  role: Exclude<Role, "camper">;
+};
+
 export type CloudDraft = {
   entries: Draft;
   updatedAt: string | null;

@@ -9,6 +9,7 @@ import type {
   Participant,
   Person,
   Ranking,
+  SupportRanking,
 } from "./types";
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
@@ -122,8 +123,10 @@ export async function submitGame(token: string, lineId: string, draft: Draft) {
 }
 
 export async function getLeaderboard() {
-  if (USE_SUPABASE) return rpc<{ generatedAt: string; rankings: Ranking[] }>("bingo_leaderboard");
-  return request<{ generatedAt: string; rankings: Ranking[] }>("/api/leaderboard");
+  if (USE_SUPABASE) {
+    return rpc<{ generatedAt: string; rankings: Ranking[]; supportRankings?: SupportRanking[] }>("bingo_leaderboard");
+  }
+  return request<{ generatedAt: string; rankings: Ranking[]; supportRankings?: SupportRanking[] }>("/api/leaderboard");
 }
 
 export async function adminLogin(password: string) {

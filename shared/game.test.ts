@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { completedLines, minimumCorrect, topics, validLines, type Draft } from "./game";
+import { completedLines, minimumCorrect, progressForLine, topics, validLines, type Draft } from "./game";
 
 describe("Bingo rules", () => {
   it("marks all five main-diagonal cells as special with no free cell", () => {
@@ -34,6 +34,15 @@ describe("Bingo rules", () => {
         noParticipantId: index === 1 ? "same" : `no-${index}`,
       }]),
     );
+    expect(completedLines(draft)).toHaveLength(0);
+  });
+
+  it("counts a one-sided cell as draft progress without completing the line", () => {
+    const line = validLines[0];
+    const draft: Draft = {
+      [line.cellIds[0]]: { yesParticipantId: "one-person", noParticipantId: "" },
+    };
+    expect(progressForLine(line, draft)).toBe(1);
     expect(completedLines(draft)).toHaveLength(0);
   });
 });

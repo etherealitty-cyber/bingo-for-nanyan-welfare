@@ -2,6 +2,7 @@ import type { Draft } from "../shared/game";
 import type {
   AdminParticipantDetail,
   AdminParticipantSummary,
+  AdminAnswersDetail,
   CloudDraft,
   LockedSubmission,
   OwnAnswer,
@@ -178,4 +179,29 @@ export async function getAdminParticipantDetail(token: string, participantId: st
     });
   }
   throw new Error("当前后端不支持棋盘详情");
+}
+
+export async function getAdminAnswers(token: string, participantId: string) {
+  if (USE_SUPABASE) {
+    return rpc<AdminAnswersDetail>("bingo_admin_answers", {
+      p_token: token,
+      p_participant_id: participantId,
+    });
+  }
+  throw new Error("当前后端不支持答案编辑");
+}
+
+export async function updateAdminAnswers(
+  token: string,
+  participantId: string,
+  answers: Record<string, boolean>,
+) {
+  if (USE_SUPABASE) {
+    return rpc<AdminAnswersDetail>("bingo_admin_update_answers", {
+      p_token: token,
+      p_participant_id: participantId,
+      p_answers: answers,
+    });
+  }
+  throw new Error("当前后端不支持答案编辑");
 }

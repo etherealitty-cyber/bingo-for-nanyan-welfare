@@ -41,6 +41,12 @@ export type CloudDraft = {
 export type OwnAnswer = {
   topic_id: string;
   interested: boolean;
+  updated_at?: string;
+};
+
+export type AdminAnswersDetail = {
+  participant: Pick<Participant, "id" | "nickname" | "role">;
+  answers: OwnAnswer[];
 };
 
 export type AdminParticipantSummary = {

@@ -1,8 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle, LockKey, MinusCircle, SignOut, X, XCircle } from "@phosphor-icons/react";
-import { adminLogin, adminSession, getAdminOverview, getAdminParticipantDetail } from "../api";
+import { topics } from "../../shared/game";
+import {
+  adminLogin,
+  adminSession,
+  getAdminAnswers,
+  getAdminOverview,
+  getAdminParticipantDetail,
+  updateAdminAnswers,
+} from "../api";
 import { parseServerDate } from "../date";
-import type { AdminAuditChoice, AdminParticipantDetail, AdminParticipantSummary } from "../types";
+import type {
+  AdminAnswersDetail,
+  AdminAuditChoice,
+  AdminParticipantDetail,
+  AdminParticipantSummary,
+} from "../types";
 
 type Overview = Awaited<ReturnType<typeof getAdminOverview>>;
 
@@ -97,6 +110,137 @@ function ParticipantAuditDialog({
   );
 }
 
+function ParticipantAnswersDialog({
+  participant,
+  onClose,
+  onSaved,
+}: {
+  participant: AdminParticipantSummary;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [detail, setDetail] = useState<AdminAnswersDetail | null>(null);
+  const [answers, setAnswers] = useState<Record<string, boolean>>({});
+  const [originalAnswers, setOriginalAnswers] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    const token = adminSession.get();
+    if (!token) {
+      setError("管理登录已失效");
+      setLoading(false);
+      return;
+    }
+    void getAdminAnswers(token, participant.id).then((result) => {
+      if (result.answers.length !== topics.length) throw new Error("该参与者的答案数据不完整");
+      const values = Object.fromEntries(result.answers.map((answer) => [answer.topic_id, answer.interested]));
+      setDetail(result);
+      setAnswers(values);
+      setOriginalAnswers(values);
+      setError("");
+    }).catch((caught) => {
+      setError(caught instanceof Error ? caught.message : "答案读取失败");
+    }).finally(() => setLoading(false));
+  }, [participant.id]);
+
+  const changes = Object.fromEntries(topics
+    .filter((topic) => answers[topic.id] !== originalAnswers[topic.id])
+    .map((topic) => [topic.id, answers[topic.id]]));
+  const changedCount = Object.keys(changes).length;
+
+  async function saveChanges() {
+    const token = adminSession.get();
+    if (!token || changedCount === 0) return;
+    setSaving(true);
+    setSaved(false);
+    setError("");
+    try {
+      const result = await updateAdminAnswers(token, participant.id, changes);
+      const values = Object.fromEntries(result.answers.map((answer) => [answer.topic_id, answer.interested]));
+      setDetail(result);
+      setAnswers(values);
+      setOriginalAnswers(values);
+      setSaved(true);
+      onSaved();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "答案保存失败");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="admin-answer-dialog" role="dialog" aria-modal="true" aria-labelledby="answer-editor-title">
+        <header>
+          <div>
+            <span>真实答案库</span>
+            <h2 id="answer-editor-title">{detail?.participant.nickname ?? participant.nickname}</h2>
+            <p>{roleLabel(participant.role)}，修改后会自动重算相关提交成绩与排名</p>
+          </div>
+          <button type="button" className="icon-button" onClick={onClose} aria-label="关闭答案编辑"><X size={22} /></button>
+        </header>
+
+        {loading && <div className="admin-loading" aria-busy="true"><span /><span /><span /></div>}
+        {error && <p className="inline-error answer-editor-error">{error}</p>}
+        {!loading && detail && (
+          <div className="admin-answer-grid">
+            {topics.map((topic) => {
+              const interested = answers[topic.id];
+              const changed = interested !== originalAnswers[topic.id];
+              return (
+                <article key={topic.id} className={`admin-answer-cell ${topic.special ? "special" : ""} ${changed ? "changed" : ""}`}>
+                  <strong>{topic.label}</strong>
+                  <div className="answer-toggle" aria-label={`${topic.label}的答案`}>
+                    <button
+                      type="button"
+                      className={interested ? "selected yes" : ""}
+                      aria-pressed={interested}
+                      onClick={() => {
+                        setAnswers((current) => ({ ...current, [topic.id]: true }));
+                        setSaved(false);
+                      }}
+                    >
+                      是
+                    </button>
+                    <button
+                      type="button"
+                      className={!interested ? "selected no" : ""}
+                      aria-pressed={!interested}
+                      onClick={() => {
+                        setAnswers((current) => ({ ...current, [topic.id]: false }));
+                        setSaved(false);
+                      }}
+                    >
+                      否
+                    </button>
+                  </div>
+                  {changed && <small>待保存</small>}
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {!loading && detail && (
+          <footer className="answer-editor-footer">
+            <span>{saved ? "已保存并完成成绩重算" : changedCount > 0 ? `有 ${changedCount} 项待保存` : "当前没有修改"}</span>
+            <div>
+              <button type="button" className="secondary-button" onClick={onClose}>关闭</button>
+              <button type="button" className="primary-button" disabled={changedCount === 0 || saving} onClick={saveChanges}>
+                {saving ? "正在保存" : "保存修改"}
+              </button>
+            </div>
+          </footer>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -148,6 +292,7 @@ export function AdminPage() {
   const [participantDetail, setParticipantDetail] = useState<AdminParticipantDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
+  const [answerParticipant, setAnswerParticipant] = useState<AdminParticipantSummary | null>(null);
 
   const refresh = useCallback(async () => {
     const token = adminSession.get();
@@ -233,7 +378,7 @@ export function AdminPage() {
             </header>
             <div className="table-scroll">
               <table className="participant-table">
-                <thead><tr><th>昵称</th><th>身份</th><th>状态</th><th>已填写</th><th>最后更新</th><th>棋盘</th></tr></thead>
+                <thead><tr><th>昵称</th><th>身份</th><th>状态</th><th>已填写</th><th>最后更新</th><th>操作</th></tr></thead>
                 <tbody>
                   {overview.participants.map((participant) => (
                     <tr key={participant.id}>
@@ -242,7 +387,12 @@ export function AdminPage() {
                       <td><span className={`progress-status ${participant.status}`}>{statusLabel(participant.status)}</span></td>
                       <td>{participant.filled_count}/50</td>
                       <td><time>{participant.updated_at ? formatDate(participant.updated_at) : "暂无"}</time></td>
-                      <td><button type="button" className="table-action" onClick={() => setSelectedParticipantId(participant.id)}>查看棋盘</button></td>
+                      <td>
+                        <div className="table-actions">
+                          <button type="button" className="table-action" onClick={() => setSelectedParticipantId(participant.id)}>查看棋盘</button>
+                          <button type="button" className="table-action" onClick={() => setAnswerParticipant(participant)}>编辑答案</button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -289,6 +439,13 @@ export function AdminPage() {
             setParticipantDetail(null);
             setDetailError("");
           }}
+        />
+      )}
+      {answerParticipant && (
+        <ParticipantAnswersDialog
+          participant={answerParticipant}
+          onClose={() => setAnswerParticipant(null)}
+          onSaved={() => void refresh()}
         />
       )}
     </main>

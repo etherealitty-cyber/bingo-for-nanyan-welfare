@@ -110,10 +110,10 @@ export function CellEditor({ topic, people, entry, onSave, onClose }: Props) {
           <button
             type="button"
             className="primary-button"
-            disabled={!yesParticipantId || !noParticipantId}
+            disabled={!yesParticipantId && !noParticipantId}
             onClick={() => onSave({ yesParticipantId, noParticipantId })}
           >
-            保存此格
+            暂存此格
           </button>
         </footer>
       </section>

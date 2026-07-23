@@ -55,6 +55,8 @@ export type OwnAnswer = {
   topic_id: string;
   interested: boolean;
   updated_at?: string;
+  self_edit_used?: boolean;
+  self_edited_at?: string | null;
 };
 
 export type AdminAnswersDetail = {

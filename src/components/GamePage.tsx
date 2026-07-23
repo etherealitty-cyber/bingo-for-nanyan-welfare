@@ -9,7 +9,7 @@ import {
   type Draft,
   type Topic,
 } from "../../shared/game";
-import { getAnswerDirectory, getMyAnswers, saveDraft, session, submitGame } from "../api";
+import { getAnswerDirectory, getMyAnswers, saveDraft, session, submitGame, updateMyAnswer } from "../api";
 import { shufflePeopleWithPinnedThird } from "../people";
 import type { AnswerDirectoryEntry, LockedSubmission, OwnAnswer, Participant, Person } from "../types";
 import { AnswerDirectoryDialog } from "./AnswerDirectoryDialog";
@@ -121,6 +121,8 @@ export function GamePage({
   const [myAnswers, setMyAnswers] = useState<OwnAnswer[]>([]);
   const [myAnswersLoading, setMyAnswersLoading] = useState(false);
   const [myAnswersError, setMyAnswersError] = useState("");
+  const [myAnswerUpdatingTopicId, setMyAnswerUpdatingTopicId] = useState<string | null>(null);
+  const [myAnswerUpdateError, setMyAnswerUpdateError] = useState("");
   const [showAnswerDirectory, setShowAnswerDirectory] = useState(false);
   const [answerDirectoryTopicId, setAnswerDirectoryTopicId] = useState(topics[0].id);
   const [answerDirectory, setAnswerDirectory] = useState<AnswerDirectoryEntry[]>([]);
@@ -165,6 +167,7 @@ export function GamePage({
 
   async function openMyAnswers() {
     setShowMyAnswers(true);
+    setMyAnswerUpdateError("");
     if (myAnswers.length === 25 || myAnswersLoading) return;
     const token = session.get();
     if (!token) {
@@ -186,11 +189,36 @@ export function GamePage({
     }
   }
 
+  async function handleUpdateMyAnswer(topicId: string, interested: boolean) {
+    const token = session.get();
+    if (!token) {
+      const message = "登录状态已失效，请重新登录";
+      setMyAnswerUpdateError(message);
+      throw new Error(message);
+    }
+    setMyAnswerUpdatingTopicId(topicId);
+    setMyAnswerUpdateError("");
+    try {
+      const result = await updateMyAnswer(token, topicId, interested);
+      if (result.answers.length !== topics.length) {
+        throw new Error("你的问卷答案尚未配置完整，请联系工作人员");
+      }
+      setMyAnswers(result.answers);
+      setAnswerDirectory([]);
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "修改失败，请稍后重试";
+      setMyAnswerUpdateError(message);
+      throw caught;
+    } finally {
+      setMyAnswerUpdatingTopicId(null);
+    }
+  }
+
   async function openAnswerDirectory(topicId = topics[0].id) {
     if (!submission) return;
     setAnswerDirectoryTopicId(topicId);
     setShowAnswerDirectory(true);
-    if (answerDirectory.length === topics.length || answerDirectoryLoading) return;
+    if (answerDirectoryLoading) return;
     const token = session.get();
     if (!token) {
       setAnswerDirectoryError("登录状态已失效，请重新登录");
@@ -360,6 +388,9 @@ export function GamePage({
           answers={myAnswers}
           loading={myAnswersLoading}
           error={myAnswersError}
+          updatingTopicId={myAnswerUpdatingTopicId}
+          updateError={myAnswerUpdateError}
+          onUpdate={handleUpdateMyAnswer}
           onClose={() => setShowMyAnswers(false)}
         />
       )}

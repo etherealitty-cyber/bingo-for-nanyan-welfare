@@ -109,6 +109,17 @@ export async function getMyAnswers(token: string) {
   return request<{ answers: OwnAnswer[] }>("/api/me/answers", {}, token);
 }
 
+export async function updateMyAnswer(token: string, topicId: string, interested: boolean) {
+  if (USE_SUPABASE) {
+    return rpc<{ answers: OwnAnswer[] }>("bingo_update_my_answer", {
+      p_token: token,
+      p_topic_id: topicId,
+      p_interested: interested,
+    });
+  }
+  throw new Error("当前后端不支持自行修改兴趣判定");
+}
+
 export async function getAnswerDirectory(token: string) {
   if (USE_SUPABASE) {
     return rpc<{ topics: AnswerDirectoryEntry[] }>("bingo_answer_directory", { p_token: token });

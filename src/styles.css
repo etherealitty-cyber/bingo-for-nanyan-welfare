@@ -456,7 +456,7 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 .my-answers-grid { padding: 22px 24px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; }
 .my-answer-cell {
   min-width: 0;
-  min-height: 108px;
+  min-height: 156px;
   padding: 12px 11px;
   display: flex;
   flex-direction: column;
@@ -471,6 +471,24 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 .my-answer-cell > span { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 750; }
 .my-answer-cell.yes > span { color: var(--good); }
 .my-answer-cell.no > span { color: var(--muted); }
+.my-answer-edit { min-height: 45px; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; }
+.my-answer-edit > small { color: var(--muted); font-size: 9px; line-height: 1.35; }
+.my-answer-edit > div { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px; }
+.my-answer-edit button {
+  min-height: 28px;
+  padding: 4px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--surface-raised);
+  color: var(--ink);
+  font-size: 9px;
+  font-weight: 750;
+  cursor: pointer;
+}
+.my-answer-edit > button { width: 100%; }
+.my-answer-edit button.confirm { border-color: var(--accent-strong); background: var(--accent); color: #254d52; }
+.my-answer-edit button:disabled { cursor: wait; opacity: 0.55; }
+.my-answer-update-error { margin: 0 24px 16px; padding: 10px 12px; border-radius: 8px; background: var(--danger-soft); color: var(--danger); font-size: 11px; }
 .my-answers-dialog > footer {
   padding: 16px 24px max(20px, env(safe-area-inset-bottom));
   display: flex;
@@ -709,7 +727,8 @@ td time { color: var(--muted); }
   .my-answers-dialog > header { padding: 20px 18px 16px; }
   .my-answers-summary { padding: 13px 18px; }
   .my-answers-grid { padding: 16px 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .my-answer-cell { min-height: 96px; }
+  .my-answer-cell { min-height: 150px; }
+  .my-answer-update-error { margin-left: 18px; margin-right: 18px; }
   .my-answers-dialog > footer { padding-left: 18px; padding-right: 18px; align-items: stretch; flex-direction: column; }
   .my-answers-dialog > footer .primary-button { width: 100%; }
   .answer-directory-dialog { width: 100%; max-height: 94dvh; border-radius: 16px 16px 0 0; }

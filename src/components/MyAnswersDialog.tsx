@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CheckCircle, X, XCircle } from "@phosphor-icons/react";
 import { topics } from "../../shared/game";
 import type { OwnAnswer, Participant } from "../types";
@@ -7,16 +8,32 @@ export function MyAnswersDialog({
   answers,
   loading,
   error,
+  updatingTopicId,
+  updateError,
+  onUpdate,
   onClose,
 }: {
   participant: Participant;
   answers: OwnAnswer[];
   loading: boolean;
   error: string;
+  updatingTopicId: string | null;
+  updateError: string;
+  onUpdate: (topicId: string, interested: boolean) => Promise<void>;
   onClose: () => void;
 }) {
-  const answerByTopic = new Map(answers.map((answer) => [answer.topic_id, answer.interested]));
+  const [confirmTopicId, setConfirmTopicId] = useState<string | null>(null);
+  const answerByTopic = new Map(answers.map((answer) => [answer.topic_id, answer]));
   const yesCount = answers.filter((answer) => answer.interested).length;
+
+  async function confirmUpdate(topicId: string, interested: boolean) {
+    try {
+      await onUpdate(topicId, interested);
+      setConfirmTopicId(null);
+    } catch {
+      // The parent displays the server error and keeps this confirmation open for retry.
+    }
+  }
 
   return (
     <div
@@ -29,7 +46,7 @@ export function MyAnswersDialog({
           <div>
             <span>仅你登录后可见</span>
             <h2 id="my-answers-title">{participant.nickname}的兴趣名片</h2>
-            <p>这是系统根据最终问卷记录给出的 25 项判定，可以直接拿它和大家交流。</p>
+            <p>每个兴趣格可以自行修改一次。修改后会作为新的正式判定，并影响相关提交的正确率。</p>
           </div>
           <button type="button" className="icon-button" onClick={onClose} aria-label="关闭兴趣名片">
             <X size={22} />
@@ -62,7 +79,11 @@ export function MyAnswersDialog({
             </div>
             <div className="my-answers-grid">
               {topics.map((topic) => {
-                const interested = answerByTopic.get(topic.id);
+                const answer = answerByTopic.get(topic.id);
+                const interested = Boolean(answer?.interested);
+                const editUsed = Boolean(answer?.self_edit_used);
+                const confirming = confirmTopicId === topic.id;
+                const updating = updatingTopicId === topic.id;
                 return (
                   <article
                     key={topic.id}
@@ -75,10 +96,45 @@ export function MyAnswersDialog({
                         : <XCircle size={19} weight="fill" />}
                       系统判定：{interested ? "是" : "否"}
                     </span>
+                    <div className="my-answer-edit">
+                      {editUsed ? (
+                        <small>本格修改机会已使用</small>
+                      ) : confirming ? (
+                        <>
+                          <small>确认后本格不能再次修改</small>
+                          <div>
+                            <button
+                              type="button"
+                              disabled={updating}
+                              onClick={() => setConfirmTopicId(null)}
+                            >
+                              取消
+                            </button>
+                            <button
+                              type="button"
+                              className="confirm"
+                              disabled={updating}
+                              onClick={() => void confirmUpdate(topic.id, !interested)}
+                            >
+                              {updating ? "保存中" : `确认改为${interested ? "否" : "是"}`}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={updatingTopicId !== null}
+                          onClick={() => setConfirmTopicId(topic.id)}
+                        >
+                          改为{interested ? "否" : "是"}
+                        </button>
+                      )}
+                    </div>
                   </article>
                 );
               })}
             </div>
+            {updateError && <p className="my-answer-update-error" role="alert">{updateError}</p>}
             <footer>
               <span><i className="special-swatch" />蓝色格仍只能填写辅导员或工作人员</span>
               <button type="button" className="primary-button" onClick={onClose}>知道了</button>

@@ -114,7 +114,7 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
   box-shadow: var(--shadow);
 }
 .login-form label, .admin-login label { display: block; font-weight: 750; margin-bottom: 10px; }
-.login-form input, .login-form select, .admin-login input {
+.login-form input, .admin-login input {
   width: 100%;
   height: 56px;
   padding: 0 16px;
@@ -124,7 +124,6 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
   color: var(--ink);
   font-size: 19px;
 }
-.login-form select { appearance: auto; cursor: pointer; }
 .login-form input::placeholder { color: #78827e; }
 .field-help { margin: 10px 0 22px; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .field-error, .inline-error { color: #8f3028; font-size: 14px; line-height: 1.5; }
@@ -460,7 +459,7 @@ td time { color: var(--muted); }
   .board-cell.complete span b { color: var(--ink); }
   .quick-rules ul { color: #c2cbc6; }
   .leaderboard li { border-color: #354039; }
-  .search-field, .login-form input, .login-form select, .admin-login input { border-color: #66726c; }
+  .search-field, .login-form input, .admin-login input { border-color: #66726c; }
   th { background: #242d28; }
   th, td, .empty-submissions { border-color: #354039; }
 }

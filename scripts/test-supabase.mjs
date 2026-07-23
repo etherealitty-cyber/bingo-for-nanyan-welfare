@@ -31,9 +31,9 @@ async function rpc(name, parameters = {}) {
   return { response, data };
 }
 
-async function login(nickname) {
-  const result = await rpc("bingo_login", { p_code: nickname });
-  assert(result.response.ok, `姓名 ${nickname} 登录成功`);
+async function login(code) {
+  const result = await rpc("bingo_login", { p_code: code });
+  assert(result.response.ok, `邀请码 ${code} 登录成功`);
   return result.data.token;
 }
 
@@ -59,7 +59,7 @@ async function submit(token, entries) {
   return rpc("bingo_submit", { p_token: token, p_line_id: "row-1", p_entries: entries });
 }
 
-const baseToken = await login("朝露");
+const baseToken = await login("200001");
 const gameResult = await rpc("bingo_game", { p_token: baseToken });
 assert(gameResult.response.ok, "读取棋盘和人员名单成功");
 const people = gameResult.data.people;
@@ -67,7 +67,7 @@ assert(people.length === 50, "参与者名单恰好为50人");
 assert(people.filter((person) => person.role === "camper").length === 30, "营员恰好为30人");
 assert(people.filter((person) => person.role !== "camper").length === 20, "辅导员和工作人员恰好为20人");
 
-const specialToken = await login("山岚");
+const specialToken = await login("200003");
 const specialEntries = buildLine(people);
 const unusedCamper = people.find((person) => person.role === "camper" && !Object.values(specialEntries).some((entry) =>
   entry.yesParticipantId === person.id || entry.noParticipantId === person.id));
@@ -75,25 +75,25 @@ specialEntries.r1c1.yesParticipantId = unusedCamper.id;
 const specialResult = await submit(specialToken, specialEntries);
 assert(!specialResult.response.ok && specialResult.data.message.includes("蓝色特殊格"), "后端拒绝特殊格填写营员");
 
-const duplicateToken = await login("星野");
+const duplicateToken = await login("200004");
 const duplicateEntries = buildLine(people);
 duplicateEntries.r1c2.yesParticipantId = duplicateEntries.r1c1.yesParticipantId;
 const duplicateResult = await submit(duplicateToken, duplicateEntries);
 assert(!duplicateResult.response.ok && duplicateResult.data.message.includes("重复"), "后端拒绝同一线路重复姓名");
 
-const validToken = await login("鹿鸣");
+const validToken = await login("200005");
 const validResult = await submit(validToken, buildLine(people, "correct"));
 assert(validResult.response.ok && validResult.data.submission.valid === true, "正确成绩有效");
 assert(validResult.data.submission.accuracy === 1, "有效成绩准确率为100%");
 const repeatedResult = await submit(validToken, buildLine(people, "correct"));
 assert(!repeatedResult.response.ok && repeatedResult.data.message.includes("锁定"), "第二次提交被永久拒绝");
 
-const invalidToken = await login("远帆");
+const invalidToken = await login("200006");
 const invalidResult = await submit(invalidToken, buildLine(people, "wrong"));
 assert(invalidResult.response.ok && invalidResult.data.submission.valid === false, "低于80%的成绩锁定且无效");
 assert(invalidResult.data.submission.accuracy === 0, "无效成绩准确率为0%");
 
-const counselorToken = await login("麦冬");
+const counselorToken = await login("200031");
 const counselorResult = await submit(counselorToken, buildLine(people, "correct"));
 assert(counselorResult.response.ok && counselorResult.data.submission.valid === true, "辅导员可以提交有效成绩");
 

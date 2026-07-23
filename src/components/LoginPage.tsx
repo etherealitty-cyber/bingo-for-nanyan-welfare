@@ -1,33 +1,22 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, CheckCircle, ListChecks } from "@phosphor-icons/react";
-import { getPublicPeople, login, session } from "../api";
-import { shufflePeopleWithPinnedThird } from "../people";
-import type { Person } from "../types";
+import { login, session } from "../api";
 import { RulesDialog } from "./RulesDialog";
 
 export function LoginPage({ onLoggedIn, initialError = "" }: { onLoggedIn: () => void; initialError?: string }) {
-  const [nickname, setNickname] = useState("");
-  const [people, setPeople] = useState<Person[]>([]);
-  const [peopleLoading, setPeopleLoading] = useState(true);
+  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showRules, setShowRules] = useState(false);
 
   const visibleError = error || initialError;
 
-  useEffect(() => {
-    getPublicPeople()
-      .then((result) => setPeople(shufflePeopleWithPinnedThird(result.people)))
-      .catch((caught) => setError(caught instanceof Error ? caught.message : "姓名名单加载失败"))
-      .finally(() => setPeopleLoading(false));
-  }, []);
-
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const data = await login(nickname);
+      const data = await login(code);
       session.set(data.token);
       onLoggedIn();
     } catch (caught) {
@@ -54,25 +43,21 @@ export function LoginPage({ onLoggedIn, initialError = "" }: { onLoggedIn: () =>
 
       <div className="login-actions">
         <form className="login-form" onSubmit={handleSubmit}>
-          <label htmlFor="participant-name">选择你的姓名</label>
-          <select
-            id="participant-name"
-            value={nickname}
-            onChange={(event) => setNickname(event.target.value)}
-            disabled={peopleLoading}
+          <label htmlFor="invite-code">6位活动邀请码</label>
+          <input
+            id="invite-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+            placeholder="请输入邀请码"
             aria-describedby={visibleError ? "login-error" : "login-help"}
             aria-invalid={Boolean(visibleError)}
-          >
-            <option value="">{peopleLoading ? "正在加载姓名…" : "点击选择姓名"}</option>
-            {people.map((person) => (
-              <option key={person.id} value={person.nickname}>
-                {person.nickname} · {person.roleLabel}
-              </option>
-            ))}
-          </select>
-          <p id="login-help" className="field-help">请选择本人姓名，进入后会自动读取你的填写进度。</p>
+          />
+          <p id="login-help" className="field-help">邀请码由工作人员在活动开始前发放。</p>
           {visibleError && <p id="login-error" className="field-error">{visibleError}</p>}
-          <button className="primary-button" disabled={!nickname || peopleLoading || loading}>
+          <button className="primary-button" disabled={code.length !== 6 || loading}>
             {loading ? "正在进入" : "进入游戏"}
             {!loading && <ArrowRight size={19} weight="bold" />}
           </button>

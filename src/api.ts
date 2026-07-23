@@ -72,11 +72,18 @@ export const adminSession = {
   clear: () => sessionStorage.removeItem(ADMIN_TOKEN_KEY),
 };
 
-export async function login(code: string) {
-  if (USE_SUPABASE) return rpc<{ token: string; participant: Participant }>("bingo_login", { p_code: code });
+export async function getPublicPeople() {
+  if (USE_SUPABASE) {
+    return rpc<{ people: Person[] }>("bingo_public_participants");
+  }
+  return request<{ people: Person[] }>("/api/participants");
+}
+
+export async function login(nickname: string) {
+  if (USE_SUPABASE) return rpc<{ token: string; participant: Participant }>("bingo_login", { p_code: nickname });
   return request<{ token: string; participant: Participant }>("/api/login", {
     method: "POST",
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({ nickname }),
   });
 }
 

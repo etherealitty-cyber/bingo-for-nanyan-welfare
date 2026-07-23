@@ -101,15 +101,14 @@ async function login(request: Request, env: Env): Promise<Response> {
     return json({ error: "尝试次数过多，请10分钟后再试" }, 429);
   }
 
-  const { code } = await readJson<{ code?: string }>(request);
-  const normalizedCode = code?.trim() ?? "";
-  if (!/^\d{6}$/.test(normalizedCode)) return json({ error: "请输入6位邀请码" }, 400);
+  const { nickname } = await readJson<{ nickname?: string }>(request);
+  const normalizedNickname = nickname?.trim() ?? "";
+  if (!normalizedNickname) return json({ error: "请选择你的姓名" }, 400);
 
-  const codeHash = await sha256(normalizedCode);
   const participant = await env.DB.prepare(`
     SELECT id, nickname, role, eligible_for_prize
-    FROM participants WHERE invite_code_hash = ?1 AND active = 1
-  `).bind(codeHash).first<Participant>();
+    FROM participants WHERE nickname = ?1 AND active = 1
+  `).bind(normalizedNickname).first<Participant>();
   if (!participant) {
     await env.DB.prepare(`
       INSERT INTO login_attempts (ip, window_start, attempts) VALUES (?1, ?2, 1)
@@ -117,7 +116,7 @@ async function login(request: Request, env: Env): Promise<Response> {
         attempts = CASE WHEN window_start <= ?3 THEN 1 ELSE attempts + 1 END,
         window_start = CASE WHEN window_start <= ?3 THEN ?2 ELSE window_start END
     `).bind(ip, now, now - LOGIN_WINDOW_SECONDS).run();
-    return json({ error: "邀请码无效，请联系工作人员" }, 401);
+    return json({ error: "未找到该姓名，请联系工作人员" }, 401);
   }
 
   await env.DB.prepare("DELETE FROM login_attempts WHERE ip = ?1").bind(ip).run();
@@ -129,6 +128,18 @@ async function login(request: Request, env: Env): Promise<Response> {
     .bind(tokenHash, participant.id, expiresAt).run();
 
   return json({ token, participant: { ...participant, roleLabel: roleLabel(participant.role) } });
+}
+
+async function publicParticipants(env: Env): Promise<Response> {
+  const people = await env.DB.prepare(`
+    SELECT id, nickname, role
+    FROM participants
+    WHERE active = 1
+    ORDER BY id
+  `).all<Participant>();
+  return json({
+    people: people.results.map((person) => ({ ...person, roleLabel: roleLabel(person.role) })),
+  });
 }
 
 async function gameState(auth: AuthContext, env: Env): Promise<Response> {
@@ -306,6 +317,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   if (request.method === "OPTIONS") return new Response(null, { status: 204 });
   if (request.method === "GET" && url.pathname === "/api/health") return json({ ok: true });
+  if (request.method === "GET" && url.pathname === "/api/participants") return publicParticipants(env);
   if (request.method === "POST" && url.pathname === "/api/login") return login(request, env);
   if (request.method === "GET" && url.pathname === "/api/leaderboard") return leaderboard(env);
   if (request.method === "POST" && url.pathname === "/api/admin/login") return adminLogin(request, env);

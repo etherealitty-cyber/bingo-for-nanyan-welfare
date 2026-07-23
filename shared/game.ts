@@ -23,11 +23,11 @@ export type CellEntry = {
 export type Draft = Record<string, CellEntry>;
 
 const labels = [
-  ["王者荣耀", "林俊杰", "西北旅行", "原神", "星空摄影"],
-  ["厦门旅行", "阿瓦隆", "孙燕姿", "羽毛球", "血染钟楼"],
-  ["第五人格", "自然风光", "免费格", "周杰伦", "绘画"],
-  ["邓紫棋", "剧本杀", "土耳其旅行", "无畏契约", "言情小说"],
-  ["西藏旅行", "薇尔莉特", "猫和老鼠", "饥荒联机", "书法"],
+  ["《哈利波特》", "无畏契约", "玄幻小说", "诺兰导演作品", "方大同"],
+  ["宠物", "羽毛球", "周杰伦", "自然风光", "油画"],
+  ["舞蹈", "邓紫棋", "王者荣耀", "《十日终焉》", "西北川藏高原"],
+  ["板绘", "《龙族》", "篮球", "孙燕姿", "言情小说"],
+  ["林俊杰", "《紫罗兰永恒花园》", "江南水乡", "乒乓球", "摄影"],
 ] as const;
 
 export const topics: Topic[] = labels.flatMap((row, rowIndex) =>
@@ -36,8 +36,8 @@ export const topics: Topic[] = labels.flatMap((row, rowIndex) =>
     label,
     row: rowIndex,
     col: colIndex,
-    special: rowIndex + colIndex === 4 && !(rowIndex === 2 && colIndex === 2),
-    free: rowIndex === 2 && colIndex === 2,
+    special: rowIndex === colIndex,
+    free: false,
   })),
 );
 
@@ -53,18 +53,18 @@ const columnLines: Line[] = Array.from({ length: 5 }, (_, col) => ({
   cellIds: topics.filter((topic) => topic.col === col).map((topic) => topic.id),
 }));
 
-const mainDiagonal: Line = {
-  id: "diagonal-main",
-  label: "左上至右下对角线",
-  cellIds: topics.filter((topic) => topic.row === topic.col).map((topic) => topic.id),
+const secondaryDiagonal: Line = {
+  id: "diagonal-secondary",
+  label: "右上至左下对角线",
+  cellIds: topics.filter((topic) => topic.row + topic.col === 4).map((topic) => topic.id),
 };
 
-export const validLines = [...rowLines, ...columnLines, mainDiagonal];
+export const validLines = [...rowLines, ...columnLines, secondaryDiagonal];
 
 export const excludedLine: Line = {
   id: "diagonal-special",
   label: "蓝色特殊对角线",
-  cellIds: topics.filter((topic) => topic.row + topic.col === 4).map((topic) => topic.id),
+  cellIds: topics.filter((topic) => topic.row === topic.col).map((topic) => topic.id),
 };
 
 export function requiredCellIds(line: Line): string[] {

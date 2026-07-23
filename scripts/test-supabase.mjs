@@ -13,7 +13,7 @@ const answerByNickname = new Map(answerData.map((row) => [
   row[0], Object.fromEntries(answerHeaders.slice(1).map((header, index) => [header, row[index + 1]])),
 ]));
 const topicLabels = {
-  r1c1: "王者荣耀", r1c2: "林俊杰", r1c3: "西北旅行", r1c4: "原神", r1c5: "星空摄影",
+  r1c1: "《哈利波特》", r1c2: "无畏契约", r1c3: "玄幻小说", r1c4: "诺兰导演作品", r1c5: "方大同",
 };
 
 function assert(condition, message) {
@@ -41,7 +41,7 @@ function buildLine(people, mode = "correct") {
   const used = new Set();
   const entries = {};
   for (const [topicId, label] of Object.entries(topicLabels)) {
-    const candidates = people.filter((person) => topicId !== "r1c5" || person.role !== "camper");
+    const candidates = people.filter((person) => topicId !== "r1c1" || person.role !== "camper");
     const yesAnswer = mode === "correct" ? "是" : "否";
     const noAnswer = mode === "correct" ? "否" : "是";
     const yes = candidates.find((person) => !used.has(person.id) && answerByNickname.get(person.nickname)?.[label] === yesAnswer);
@@ -71,7 +71,7 @@ const specialToken = await login("200003");
 const specialEntries = buildLine(people);
 const unusedCamper = people.find((person) => person.role === "camper" && !Object.values(specialEntries).some((entry) =>
   entry.yesParticipantId === person.id || entry.noParticipantId === person.id));
-specialEntries.r1c5.yesParticipantId = unusedCamper.id;
+specialEntries.r1c1.yesParticipantId = unusedCamper.id;
 const specialResult = await submit(specialToken, specialEntries);
 assert(!specialResult.response.ok && specialResult.data.message.includes("蓝色特殊格"), "后端拒绝特殊格填写营员");
 

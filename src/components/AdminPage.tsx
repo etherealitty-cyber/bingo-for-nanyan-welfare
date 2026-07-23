@@ -240,7 +240,7 @@ export function AdminPage() {
                       <td><strong>{participant.nickname}</strong></td>
                       <td>{roleLabel(participant.role)}</td>
                       <td><span className={`progress-status ${participant.status}`}>{statusLabel(participant.status)}</span></td>
-                      <td>{participant.filled_count}/48</td>
+                      <td>{participant.filled_count}/50</td>
                       <td><time>{participant.updated_at ? formatDate(participant.updated_at) : "暂无"}</time></td>
                       <td><button type="button" className="table-action" onClick={() => setSelectedParticipantId(participant.id)}>查看棋盘</button></td>
                     </tr>

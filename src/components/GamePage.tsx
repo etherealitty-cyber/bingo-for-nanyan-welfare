@@ -181,7 +181,7 @@ export function GamePage({
           <div className="board-intro">
             <div>
               <h1>{submission ? "你的 Bingo" : "完成一条有效线路"}</h1>
-              <p>{submission ? "正式成绩已提交，棋盘不可再修改。" : "点击格子填写姓名，中心免费格已自动点亮。"}</p>
+              <p>{submission ? "正式成绩已提交，棋盘不可再修改。" : "点击格子填写姓名，每格都需要填写“是”和“否”。"}</p>
               {!submission && draftSaveState !== "idle" && (
                 <small className={`draft-save-state ${draftSaveState}`}>
                   {draftSaveState === "saving" && "正在保存到云端"}
@@ -246,7 +246,7 @@ export function GamePage({
             <ul>
               <li>每格分别填写一位“有兴趣”和“没兴趣”的人。</li>
               <li>同一条参赛线路中，同一个人最多出现一次。</li>
-              <li>蓝色对角线不计成绩，中心免费格无需填写。</li>
+              <li>左上至右下的蓝色对角线不计成绩，其他线路均可参与。</li>
               <li>提交后不能修改，准确率达到80%才有效。</li>
             </ul>
             <button type="button" className="text-button" onClick={() => alert("完整规则页面将在活动文案确认后补充。")}>查看完整规则 <ArrowSquareOut size={16} /></button>

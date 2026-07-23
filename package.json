@@ -16,6 +16,7 @@
     "db:import-test:local": "wrangler d1 execute interest-bingo --local --file .private-data/import.sql --config worker/wrangler.toml",
     "data:prepare": "node scripts/prepare-data.mjs",
     "supabase:prepare": "node scripts/prepare-supabase.mjs",
+    "supabase:prepare-final": "node scripts/prepare-supabase.mjs .private-data/final-participants.csv .private-data/final-answers.csv --replace-data",
     "test:supabase": "node scripts/test-supabase.mjs",
     "test:api": "node scripts/test-api.mjs"
   },

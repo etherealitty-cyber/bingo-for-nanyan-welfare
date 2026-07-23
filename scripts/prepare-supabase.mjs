@@ -9,7 +9,7 @@ if (!adminPassword) throw new Error("请通过 BINGO_ADMIN_PASSWORD 提供后台
 
 function rows(csv) {
   const [headerLine, ...lines] = csv.trim().split(/\r?\n/);
-  const headers = headerLine.split(",");
+  const headers = headerLine.replace(/^\uFEFF/, "").split(",");
   return lines.map((line) => Object.fromEntries(line.split(",").map((value, index) => [headers[index], value])));
 }
 
@@ -27,16 +27,16 @@ const answerByNickname = new Map(answers.map((answer) => [answer.nickname, answe
 const topicIds = [
   "r1c1", "r1c2", "r1c3", "r1c4", "r1c5",
   "r2c1", "r2c2", "r2c3", "r2c4", "r2c5",
-  "r3c1", "r3c2", "r3c4", "r3c5",
+  "r3c1", "r3c2", "r3c3", "r3c4", "r3c5",
   "r4c1", "r4c2", "r4c3", "r4c4", "r4c5",
   "r5c1", "r5c2", "r5c3", "r5c4", "r5c5",
 ];
 const topicLabels = [
-  "王者荣耀", "林俊杰", "西北旅行", "原神", "星空摄影",
-  "厦门旅行", "阿瓦隆", "孙燕姿", "羽毛球", "血染钟楼",
-  "第五人格", "自然风光", "周杰伦", "绘画",
-  "邓紫棋", "剧本杀", "土耳其旅行", "无畏契约", "言情小说",
-  "西藏旅行", "薇尔莉特", "猫和老鼠", "饥荒联机", "书法",
+  "《哈利波特》", "无畏契约", "玄幻小说", "诺兰导演作品", "方大同",
+  "宠物", "羽毛球", "周杰伦", "自然风光", "油画",
+  "舞蹈", "邓紫棋", "王者荣耀", "《十日终焉》", "西北川藏高原",
+  "板绘", "《龙族》", "篮球", "孙燕姿", "言情小说",
+  "林俊杰", "《紫罗兰永恒花园》", "江南水乡", "乒乓球", "摄影",
 ];
 
 const participantValues = participants.map((participant, index) => {
@@ -57,8 +57,19 @@ const answerValues = participants.flatMap((participant, index) => {
 const migrations = await Promise.all([
   "supabase/migrations/0001_bingo.sql",
   "supabase/migrations/0002_live_drafts.sql",
+  "supabase/migrations/0003_final_board.sql",
 ].map((path) => readFile(resolve(path), "utf8")));
+const replaceData = process.argv.includes("--replace-data");
+const resetSql = replaceData ? `
+delete from bingo_private.admin_sessions;
+delete from bingo_private.sessions;
+delete from bingo_private.submissions;
+delete from bingo_private.drafts;
+delete from bingo_private.answers;
+delete from bingo_private.participants;
+` : "";
 const setup = `begin;\n${migrations.join("\n")}\n
+${resetSql}
 insert into bingo_private.participants
   (id, nickname, role, invite_code_hash, eligible_for_prize)
 values\n${participantValues.join(",\n")};
@@ -71,7 +82,9 @@ values (true, ${sql(sha256(adminPassword))})
 on conflict (singleton) do update set password_hash = excluded.password_hash;
 commit;\n`;
 
-const outputPath = resolve(".private-data/supabase-setup.sql");
+const outputPath = resolve(replaceData
+  ? ".private-data/supabase-replace-data.sql"
+  : ".private-data/supabase-setup.sql");
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, setup, { mode: 0o600 });
 console.log(`已生成 Supabase 初始化文件：${outputPath}`);

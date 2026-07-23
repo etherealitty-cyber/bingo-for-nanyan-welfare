@@ -605,6 +605,7 @@ td time { color: var(--muted); }
   background: var(--surface-raised);
 }
 .answer-editor-footer > span { color: var(--muted); font-size: 11px; }
+.answer-editor-footer > .answer-save-error { color: var(--danger); }
 .answer-editor-footer > div { display: flex; gap: 9px; }
 .empty-submissions { border-top: 1px solid var(--line); padding: 60px 24px; color: var(--muted); text-align: center; font-size: 13px; }
 .admin-loading { padding: 100px 0; }

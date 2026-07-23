@@ -185,7 +185,7 @@ function ParticipantAnswersDialog({
         </header>
 
         {loading && <div className="admin-loading" aria-busy="true"><span /><span /><span /></div>}
-        {error && <p className="inline-error answer-editor-error">{error}</p>}
+        {error && !detail && <p className="inline-error answer-editor-error">{error}</p>}
         {!loading && detail && (
           <div className="admin-answer-grid">
             {topics.map((topic) => {
@@ -227,7 +227,9 @@ function ParticipantAnswersDialog({
 
         {!loading && detail && (
           <footer className="answer-editor-footer">
-            <span>{saved ? "已保存并完成成绩重算" : changedCount > 0 ? `有 ${changedCount} 项待保存` : "当前没有修改"}</span>
+            <span className={error ? "answer-save-error" : ""}>
+              {error || (saved ? "已保存并完成成绩重算" : changedCount > 0 ? `有 ${changedCount} 项待保存` : "当前没有修改")}
+            </span>
             <div>
               <button type="button" className="secondary-button" onClick={onClose}>关闭</button>
               <button type="button" className="primary-button" disabled={changedCount === 0 || saving} onClick={saveChanges}>

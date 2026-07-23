@@ -1,6 +1,8 @@
+import { Confetti, Sparkle, X } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 
 const logoUrl = `${import.meta.env.BASE_URL}nanyan-public-welfare.jpg`;
+const transparentLogoUrl = `${import.meta.env.BASE_URL}nanyan-public-welfare-transparent.png`;
 
 export function NanyanBrand({ compact = false }: { compact?: boolean }) {
   const [showCredit, setShowCredit] = useState(false);
@@ -11,9 +13,51 @@ export function NanyanBrand({ compact = false }: { compact?: boolean }) {
     function closeCredit(event: PointerEvent) {
       if (!brandRef.current?.contains(event.target as Node)) setShowCredit(false);
     }
+    function closeWithKeyboard(event: KeyboardEvent) {
+      if (event.key === "Escape") setShowCredit(false);
+    }
     document.addEventListener("pointerdown", closeCredit);
-    return () => document.removeEventListener("pointerdown", closeCredit);
+    document.addEventListener("keydown", closeWithKeyboard);
+    return () => {
+      document.removeEventListener("pointerdown", closeCredit);
+      document.removeEventListener("keydown", closeWithKeyboard);
+    };
   }, [showCredit]);
+
+  const easterEgg = showCredit && (
+    <div
+      className="easter-egg-backdrop"
+      role="presentation"
+      onMouseDown={(event) => event.target === event.currentTarget && setShowCredit(false)}
+    >
+      <section className="easter-egg-dialog" role="dialog" aria-modal="true" aria-labelledby="easter-egg-title">
+        <Sparkle className="easter-spark spark-one" size={28} weight="fill" aria-hidden="true" />
+        <Sparkle className="easter-spark spark-two" size={18} weight="fill" aria-hidden="true" />
+        <button
+          type="button"
+          className="easter-egg-close"
+          onClick={() => setShowCredit(false)}
+          aria-label="关闭彩蛋"
+        >
+          <X size={20} />
+        </button>
+
+        <img
+          className="easter-egg-logo"
+          src={transparentLogoUrl}
+          alt="南雁公益 Nanyan Public Welfare"
+        />
+        <div className="easter-egg-label"><Confetti size={18} weight="duotone" />隐藏祝福</div>
+        <h2 id="easter-egg-title">恭喜你发现了彩蛋！</h2>
+        <p>愿这个夏天，你能在南雁遇见同频的朋友，解锁新的兴趣，也留下许多值得反复想起的快乐回忆。</p>
+        <p>祝大家度过一个热烈、有趣、闪闪发光的夏令营。</p>
+        <span className="easter-egg-credit">Built with care by Hengtao Wu</span>
+        <button type="button" className="primary-button" autoFocus onClick={() => setShowCredit(false)}>
+          收下这份祝福
+        </button>
+      </section>
+    </div>
+  );
 
   if (compact) {
     return (
@@ -30,7 +74,7 @@ export function NanyanBrand({ compact = false }: { compact?: boolean }) {
           </span>
           <span>南雁公益</span>
         </button>
-        {showCredit && <span className="builder-credit" role="status">Built by Hengtao Wu</span>}
+        {easterEgg}
       </div>
     );
   }
@@ -47,7 +91,7 @@ export function NanyanBrand({ compact = false }: { compact?: boolean }) {
         <span>联合呈现</span>
         <img src={logoUrl} alt="南雁公益 Nanyan Public Welfare" />
       </button>
-      {showCredit && <span className="builder-credit" role="status">Built by Hengtao Wu</span>}
+      {easterEgg}
     </div>
   );
 }

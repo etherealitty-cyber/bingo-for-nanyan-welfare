@@ -94,6 +94,7 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 }
 
 .login-copy { max-width: 610px; }
+.login-actions { display: grid; gap: 12px; }
 .brand-lockup { display: flex; align-items: baseline; gap: 4px; font-size: clamp(24px, 3vw, 40px); letter-spacing: -0.05em; }
 .brand-lockup strong { font-weight: 900; }
 .brand-lockup b { font-size: 1.18em; }
@@ -131,6 +132,7 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 .fatal-error p { color: var(--muted); line-height: 1.6; }
 .fatal-error code { display: block; margin: 18px 0; padding: 12px; border-radius: 8px; background: var(--surface); color: var(--muted); overflow-wrap: anywhere; }
 .login-form .primary-button { width: 100%; margin-top: 8px; }
+.login-rules-button { min-height: 44px; border: 0; background: transparent; color: var(--accent-strong); display: flex; align-items: center; justify-content: center; gap: 7px; font-weight: 750; cursor: pointer; }
 
 .loading-mark, .admin-loading { display: flex; gap: 7px; align-items: center; justify-content: center; }
 .loading-state { display: grid; justify-items: center; gap: 16px; color: var(--muted); font-size: 14px; }
@@ -252,7 +254,7 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 .locked-result p { margin: 0; font-size: 13px; line-height: 1.55; }
 
 .modal-backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(21, 29, 26, 0.54); padding: 20px; display: grid; place-items: center; backdrop-filter: blur(5px); }
-.cell-editor, .submit-dialog { width: min(100%, 620px); max-height: min(90dvh, 780px); overflow: auto; background: var(--surface-raised); border-radius: var(--radius-card); box-shadow: 0 28px 80px rgba(17, 28, 24, 0.28); }
+.cell-editor, .submit-dialog, .rules-dialog { width: min(100%, 620px); max-height: min(90dvh, 780px); overflow: auto; background: var(--surface-raised); border-radius: var(--radius-card); box-shadow: 0 28px 80px rgba(17, 28, 24, 0.28); }
 .cell-editor > header { padding: 24px 26px 18px; display: flex; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--line); }
 .cell-editor h2, .submit-dialog h2 { margin: 0; font-size: 26px; letter-spacing: -0.025em; }
 .cell-editor header p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
@@ -289,6 +291,21 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 .submit-dialog fieldset small { color: var(--muted); margin-top: 2px; }
 .submit-warning { padding: 12px 14px; border-radius: var(--radius-control); background: var(--warning-soft); font-size: 12px; line-height: 1.55; }
 .submit-dialog > footer { padding: 22px 0 0; }
+
+.rules-dialog { width: min(100%, 760px); display: flex; flex-direction: column; overflow: hidden; }
+.rules-dialog > header { flex: none; padding: 22px 26px 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--line); }
+.rules-dialog > header span { color: var(--muted); font-size: 11px; }
+.rules-dialog h2 { margin: 3px 0 0; font-size: clamp(22px, 4vw, 30px); letter-spacing: -0.035em; }
+.rules-content { overflow: auto; padding: 8px 26px 24px; }
+.rules-content section { padding: 20px 0; border-bottom: 1px solid #e1e4e1; }
+.rules-content section:last-child { border-bottom: 0; padding-bottom: 4px; }
+.rules-content h3 { margin: 0 0 10px; display: flex; align-items: center; gap: 10px; font-size: 16px; }
+.rules-content h3 b { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-size: 12px; }
+.rules-content p, .rules-content ul { margin: 0; color: #4e5955; font-size: 13px; line-height: 1.75; }
+.rules-content ul { padding-left: 20px; }
+.rules-content p + p, .rules-content p + ul, .rules-content ul + p { margin-top: 8px; }
+.rules-content .rule-warning { padding: 10px 12px; border-radius: var(--radius-control); background: var(--warning-soft); color: #5f532d; }
+.rules-dialog > footer { flex: none; padding: 16px 26px max(20px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface-raised); display: flex; justify-content: flex-end; }
 
 .admin-login form { width: min(100%, 410px); padding: 34px; border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface-raised); box-shadow: var(--shadow); }
 .admin-login h1 { margin: 22px 0 6px; }
@@ -388,13 +405,17 @@ td time { color: var(--muted); }
   .submit-bar .primary-button { width: 100%; }
   .game-sidebar { grid-template-columns: 1fr; }
   .modal-backdrop { padding: 0; place-items: end center; }
-  .cell-editor, .submit-dialog { width: 100%; max-height: 92dvh; border-radius: 16px 16px 0 0; }
+  .cell-editor, .submit-dialog, .rules-dialog { width: 100%; max-height: 92dvh; border-radius: 16px 16px 0 0; }
   .picker-stack { grid-template-columns: 1fr; padding: 18px; }
   .cell-editor > header { padding: 20px 18px 16px; }
   .cell-editor > footer { padding: 14px 18px max(20px, env(safe-area-inset-bottom)); }
   .person-options { max-height: 160px; }
   .submit-dialog { padding: 22px 18px max(22px, env(safe-area-inset-bottom)); }
   .submit-dialog > footer { display: grid; grid-template-columns: 1fr 1fr; }
+  .rules-dialog > header { padding: 20px 18px 16px; }
+  .rules-content { padding: 4px 18px 18px; }
+  .rules-dialog > footer { padding-left: 18px; padding-right: 18px; }
+  .rules-dialog > footer .primary-button { width: 100%; }
   .admin-shell { padding: 24px 16px 50px; }
   .admin-header h1 { font-size: 28px; }
   .stat-grid { grid-template-columns: 1fr 1fr; }

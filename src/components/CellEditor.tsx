@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";
 import type { CellEntry, Topic } from "../../shared/game";
+import { pinPersonThird } from "../people";
 import type { Person } from "../types";
 
 type Props = {
@@ -27,8 +28,8 @@ function PersonPicker({
   onChange: (value: string) => void;
 }) {
   const [query, setQuery] = useState("");
-  const filtered = useMemo(() => people.filter((person) =>
-    person.id !== excludedId && person.nickname.toLowerCase().includes(query.trim().toLowerCase())), [people, query, excludedId]);
+  const filtered = useMemo(() => pinPersonThird(people.filter((person) =>
+    person.id !== excludedId && person.nickname.toLowerCase().includes(query.trim().toLowerCase()))), [people, query, excludedId]);
   const selected = people.find((person) => person.id === value);
 
   return (

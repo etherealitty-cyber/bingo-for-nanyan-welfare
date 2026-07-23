@@ -10,9 +10,11 @@ import {
   type Topic,
 } from "../../shared/game";
 import { saveDraft, session, submitGame } from "../api";
+import { shufflePeopleWithPinnedThird } from "../people";
 import type { LockedSubmission, Participant, Person } from "../types";
 import { CellEditor } from "./CellEditor";
 import { Leaderboard } from "./Leaderboard";
+import { RulesDialog } from "./RulesDialog";
 import { SubmitDialog } from "./SubmitDialog";
 
 const DRAFT_KEY = "interest-bingo-draft";
@@ -105,8 +107,10 @@ export function GamePage({
   onLogout: () => void;
 }) {
   const [draft, setDraft] = useState<Draft>(() => loadDraft(initialData.participant.id, initialData.draft));
+  const [displayPeople] = useState(() => shufflePeopleWithPinnedThird(initialData.people));
   const [activeTopic, setActiveTopic] = useState<Topic | null>(null);
   const [showSubmit, setShowSubmit] = useState(false);
+  const [showRules, setShowRules] = useState(false);
   const [submission, setSubmission] = useState<LockedSubmission | null>(initialData.submission);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -206,7 +210,7 @@ export function GamePage({
                 key={topic.id}
                 topic={topic}
                 draft={draft}
-                people={initialData.people}
+                people={displayPeople}
                 locked={Boolean(submission)}
                 onOpen={() => setActiveTopic(topic)}
               />
@@ -249,7 +253,7 @@ export function GamePage({
               <li>左上至右下的蓝色对角线不计成绩，其他线路均可参与。</li>
               <li>提交后不能修改，准确率达到80%才有效。</li>
             </ul>
-            <button type="button" className="text-button" onClick={() => alert("完整规则页面将在活动文案确认后补充。")}>查看完整规则 <ArrowSquareOut size={16} /></button>
+            <button type="button" className="text-button" onClick={() => setShowRules(true)}>查看完整规则 <ArrowSquareOut size={16} /></button>
           </section>
           <Leaderboard compact />
         </aside>
@@ -258,7 +262,7 @@ export function GamePage({
       {activeTopic && (
         <CellEditor
           topic={activeTopic}
-          people={initialData.people}
+          people={displayPeople}
           entry={draft[activeTopic.id]}
           onSave={(entry) => saveCell(activeTopic.id, entry)}
           onClose={() => setActiveTopic(null)}
@@ -273,6 +277,7 @@ export function GamePage({
           onSubmit={handleSubmit}
         />
       )}
+      {showRules && <RulesDialog onClose={() => setShowRules(false)} />}
     </main>
   );
 }

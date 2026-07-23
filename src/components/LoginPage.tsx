@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { ArrowRight, CheckCircle } from "@phosphor-icons/react";
+import { ArrowRight, CheckCircle, ListChecks } from "@phosphor-icons/react";
 import { login, session } from "../api";
+import { RulesDialog } from "./RulesDialog";
 
 export function LoginPage({ onLoggedIn, initialError = "" }: { onLoggedIn: () => void; initialError?: string }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   const visibleError = error || initialError;
 
@@ -39,26 +41,34 @@ export function LoginPage({ onLoggedIn, initialError = "" }: { onLoggedIn: () =>
         </div>
       </section>
 
-      <form className="login-form" onSubmit={handleSubmit}>
-        <label htmlFor="invite-code">6位活动邀请码</label>
-        <input
-          id="invite-code"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={6}
-          value={code}
-          onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
-          placeholder="请输入邀请码"
-          aria-describedby={visibleError ? "login-error" : "login-help"}
-          aria-invalid={Boolean(visibleError)}
-        />
-        <p id="login-help" className="field-help">邀请码由工作人员在活动开始前发放。</p>
-        {visibleError && <p id="login-error" className="field-error">{visibleError}</p>}
-        <button className="primary-button" disabled={code.length !== 6 || loading}>
-          {loading ? "正在进入" : "进入游戏"}
-          {!loading && <ArrowRight size={19} weight="bold" />}
+      <div className="login-actions">
+        <form className="login-form" onSubmit={handleSubmit}>
+          <label htmlFor="invite-code">6位活动邀请码</label>
+          <input
+            id="invite-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            value={code}
+            onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+            placeholder="请输入邀请码"
+            aria-describedby={visibleError ? "login-error" : "login-help"}
+            aria-invalid={Boolean(visibleError)}
+          />
+          <p id="login-help" className="field-help">邀请码由工作人员在活动开始前发放。</p>
+          {visibleError && <p id="login-error" className="field-error">{visibleError}</p>}
+          <button className="primary-button" disabled={code.length !== 6 || loading}>
+            {loading ? "正在进入" : "进入游戏"}
+            {!loading && <ArrowRight size={19} weight="bold" />}
+          </button>
+        </form>
+        <button type="button" className="login-rules-button" onClick={() => setShowRules(true)}>
+          <ListChecks size={19} />
+          活动前先看完整规则
         </button>
-      </form>
+      </div>
+
+      {showRules && <RulesDialog onClose={() => setShowRules(false)} />}
     </main>
   );
 }

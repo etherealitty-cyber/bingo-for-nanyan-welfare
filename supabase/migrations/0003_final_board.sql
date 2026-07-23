@@ -165,10 +165,10 @@ begin
       ) order by topic.position), '[]'::jsonb)
       from (values
         (1,'r1c1','《哈利波特》',true),(2,'r1c2','无畏契约',false),(3,'r1c3','玄幻小说',false),(4,'r1c4','诺兰导演作品',false),(5,'r1c5','方大同',false),
-        (6,'r2c1','宠物',false),(7,'r2c2','羽毛球',true),(8,'r2c3','周杰伦',false),(9,'r2c4','自然风光',false),(10,'r2c5','油画',false),
+        (6,'r2c1','宠物',false),(7,'r2c2','羽毛球',true),(8,'r2c3','周杰伦',false),(9,'r2c4','自然风光摄影',false),(10,'r2c5','油画',false),
         (11,'r3c1','舞蹈',false),(12,'r3c2','邓紫棋',false),(13,'r3c3','王者荣耀',true),(14,'r3c4','《十日终焉》',false),(15,'r3c5','西北川藏高原',false),
         (16,'r4c1','板绘',false),(17,'r4c2','《龙族》',false),(18,'r4c3','篮球',false),(19,'r4c4','孙燕姿',true),(20,'r4c5','言情小说',false),
-        (21,'r5c1','林俊杰',false),(22,'r5c2','《紫罗兰永恒花园》',false),(23,'r5c3','江南水乡',false),(24,'r5c4','乒乓球',false),(25,'r5c5','摄影',true)
+        (21,'r5c1','林俊杰',false),(22,'r5c2','《紫罗兰永恒花园》',false),(23,'r5c3','异国景致',false),(24,'r5c4','乒乓球',false),(25,'r5c5','人文摄影',true)
       ) as topic(position,id,label,special)
       left join bingo_private.submission_entries se on se.submission_id = s.id and se.topic_id = topic.id
       left join bingo_private.participants yes_person on yes_person.id = coalesce(

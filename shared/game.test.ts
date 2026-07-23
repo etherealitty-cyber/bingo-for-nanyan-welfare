@@ -7,6 +7,12 @@ describe("Bingo rules", () => {
     expect(topics.filter((topic) => topic.special)).toHaveLength(5);
   });
 
+  it("uses the final three photography and travel topics", () => {
+    expect(topics.find((topic) => topic.id === "r2c4")?.label).toBe("自然风光摄影");
+    expect(topics.find((topic) => topic.id === "r5c3")?.label).toBe("异国景致");
+    expect(topics.find((topic) => topic.id === "r5c5")?.label).toBe("人文摄影");
+  });
+
   it("excludes the blue main diagonal and keeps the other diagonal valid", () => {
     expect(validLines.some((line) => line.id === "diagonal-main")).toBe(false);
     expect(validLines.find((line) => line.id === "diagonal-secondary")?.cellIds).toEqual([

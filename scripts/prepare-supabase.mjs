@@ -33,10 +33,10 @@ const topicIds = [
 ];
 const topicLabels = [
   "《哈利波特》", "无畏契约", "玄幻小说", "诺兰导演作品", "方大同",
-  "宠物", "羽毛球", "周杰伦", "自然风光", "油画",
+  "宠物", "羽毛球", "周杰伦", "自然风光摄影", "油画",
   "舞蹈", "邓紫棋", "王者荣耀", "《十日终焉》", "西北川藏高原",
   "板绘", "《龙族》", "篮球", "孙燕姿", "言情小说",
-  "林俊杰", "《紫罗兰永恒花园》", "江南水乡", "乒乓球", "摄影",
+  "林俊杰", "《紫罗兰永恒花园》", "异国景致", "乒乓球", "人文摄影",
 ];
 
 const participantValues = participants.map((participant, index) => {
@@ -58,6 +58,8 @@ const migrations = await Promise.all([
   "supabase/migrations/0001_bingo.sql",
   "supabase/migrations/0002_live_drafts.sql",
   "supabase/migrations/0003_final_board.sql",
+  "supabase/migrations/0004_fix_answer_scopes.sql",
+  "supabase/migrations/0005_final_topic_updates.sql",
 ].map((path) => readFile(resolve(path), "utf8")));
 const replaceData = process.argv.includes("--replace-data");
 const resetSql = replaceData ? `

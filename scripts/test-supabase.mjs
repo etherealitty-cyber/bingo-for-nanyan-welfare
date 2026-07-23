@@ -66,6 +66,14 @@ const people = gameResult.data.people;
 assert(people.length === 50, "参与者名单恰好为50人");
 assert(people.filter((person) => person.role === "camper").length === 30, "营员恰好为30人");
 assert(people.filter((person) => person.role !== "camper").length === 20, "辅导员和工作人员恰好为20人");
+const ownAnswers = await rpc("bingo_my_answers", { p_token: baseToken });
+assert(ownAnswers.response.ok, "读取当前登录者自己的答案成功");
+assert(ownAnswers.data.answers.length === 25, "只返回当前登录者的25项答案");
+assert(
+  ownAnswers.data.answers.find((answer) => answer.topic_id === "r1c1")?.interested
+    === (answerByNickname.get(gameResult.data.participant.nickname)?.["《哈利波特》"] === "是"),
+  "自己的答案与后台记录一致",
+);
 
 const specialToken = await login("200003");
 const specialEntries = buildLine(people);

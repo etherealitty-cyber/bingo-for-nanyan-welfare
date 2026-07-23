@@ -60,6 +60,7 @@ const migrations = await Promise.all([
   "supabase/migrations/0003_final_board.sql",
   "supabase/migrations/0004_fix_answer_scopes.sql",
   "supabase/migrations/0005_final_topic_updates.sql",
+  "supabase/migrations/0006_my_answers.sql",
 ].map((path) => readFile(resolve(path), "utf8")));
 const replaceData = process.argv.includes("--replace-data");
 const resetSql = replaceData ? `

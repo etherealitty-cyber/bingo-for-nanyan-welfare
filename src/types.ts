@@ -38,6 +38,11 @@ export type CloudDraft = {
   updatedAt: string | null;
 };
 
+export type OwnAnswer = {
+  topic_id: string;
+  interested: boolean;
+};
+
 export type AdminParticipantSummary = {
   id: string;
   nickname: string;

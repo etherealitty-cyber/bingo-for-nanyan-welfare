@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowSquareOut, Check, LockKey, SignOut, UsersThree } from "@phosphor-icons/react";
+import { ArrowSquareOut, Check, IdentificationCard, LockKey, SignOut, UsersThree } from "@phosphor-icons/react";
 import {
   completedLines,
   progressForLine,
@@ -9,11 +9,12 @@ import {
   type Draft,
   type Topic,
 } from "../../shared/game";
-import { saveDraft, session, submitGame } from "../api";
+import { getMyAnswers, saveDraft, session, submitGame } from "../api";
 import { shufflePeopleWithPinnedThird } from "../people";
-import type { LockedSubmission, Participant, Person } from "../types";
+import type { LockedSubmission, OwnAnswer, Participant, Person } from "../types";
 import { CellEditor } from "./CellEditor";
 import { Leaderboard } from "./Leaderboard";
+import { MyAnswersDialog } from "./MyAnswersDialog";
 import { RulesDialog } from "./RulesDialog";
 import { SubmitDialog } from "./SubmitDialog";
 
@@ -111,6 +112,10 @@ export function GamePage({
   const [activeTopic, setActiveTopic] = useState<Topic | null>(null);
   const [showSubmit, setShowSubmit] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [showMyAnswers, setShowMyAnswers] = useState(false);
+  const [myAnswers, setMyAnswers] = useState<OwnAnswer[]>([]);
+  const [myAnswersLoading, setMyAnswersLoading] = useState(false);
+  const [myAnswersError, setMyAnswersError] = useState("");
   const [submission, setSubmission] = useState<LockedSubmission | null>(initialData.submission);
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -146,6 +151,29 @@ export function GamePage({
     localStorage.setItem(`${DRAFT_KEY}:${initialData.participant.id}`, JSON.stringify(next));
     setDraftSaveState("saving");
     setActiveTopic(null);
+  }
+
+  async function openMyAnswers() {
+    setShowMyAnswers(true);
+    if (myAnswers.length === 25 || myAnswersLoading) return;
+    const token = session.get();
+    if (!token) {
+      setMyAnswersError("登录状态已失效，请重新登录");
+      return;
+    }
+    setMyAnswersLoading(true);
+    setMyAnswersError("");
+    try {
+      const result = await getMyAnswers(token);
+      if (result.answers.length !== topics.length) {
+        throw new Error("你的问卷答案尚未配置完整，请联系工作人员");
+      }
+      setMyAnswers(result.answers);
+    } catch (caught) {
+      setMyAnswersError(caught instanceof Error ? caught.message : "读取失败，请稍后重试");
+    } finally {
+      setMyAnswersLoading(false);
+    }
   }
 
   async function handleSubmit(lineId: string) {
@@ -203,6 +231,17 @@ export function GamePage({
           </div>
 
           {submission && <LockedResult submission={submission} />}
+
+          <section className="my-answer-banner">
+            <div className="my-answer-banner-icon"><IdentificationCard size={26} weight="duotone" /></div>
+            <div>
+              <strong>看看系统如何判定你</strong>
+              <span>打开自己的 25 项“是 / 否”，交流时更方便。</span>
+            </div>
+            <button type="button" className="secondary-button" onClick={openMyAnswers}>
+              查看我的兴趣名片
+            </button>
+          </section>
 
           <div className={`bingo-board ${submission ? "locked" : ""}`}>
             {topics.map((topic) => (
@@ -278,6 +317,15 @@ export function GamePage({
         />
       )}
       {showRules && <RulesDialog onClose={() => setShowRules(false)} />}
+      {showMyAnswers && (
+        <MyAnswersDialog
+          participant={initialData.participant}
+          answers={myAnswers}
+          loading={myAnswersLoading}
+          error={myAnswersError}
+          onClose={() => setShowMyAnswers(false)}
+        />
+      )}
     </main>
   );
 }

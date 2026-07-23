@@ -4,6 +4,7 @@ import type {
   AdminParticipantSummary,
   CloudDraft,
   LockedSubmission,
+  OwnAnswer,
   Participant,
   Person,
   Ranking,
@@ -96,6 +97,13 @@ export async function saveDraft(token: string, draft: Draft) {
     return rpc<{ updatedAt: string }>("bingo_save_draft", { p_token: token, p_entries: draft });
   }
   return { updatedAt: new Date().toISOString() };
+}
+
+export async function getMyAnswers(token: string) {
+  if (USE_SUPABASE) {
+    return rpc<{ answers: OwnAnswer[] }>("bingo_my_answers", { p_token: token });
+  }
+  return request<{ answers: OwnAnswer[] }>("/api/me/answers", {}, token);
 }
 
 export async function submitGame(token: string, lineId: string, draft: Draft) {

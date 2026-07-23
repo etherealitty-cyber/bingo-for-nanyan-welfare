@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowRight, CheckCircle, ListChecks } from "@phosphor-icons/react";
 import { login, session } from "../api";
+import { NanyanBrand } from "./NanyanBrand";
 import { RulesDialog } from "./RulesDialog";
 
 export function LoginPage({ onLoggedIn, initialError = "" }: { onLoggedIn: () => void; initialError?: string }) {
@@ -39,6 +40,7 @@ export function LoginPage({ onLoggedIn, initialError = "" }: { onLoggedIn: () =>
           <CheckCircle size={21} weight="fill" />
           <span>正式提交后锁定，不能修改或再次提交</span>
         </div>
+        <NanyanBrand />
       </section>
 
       <div className="login-actions">

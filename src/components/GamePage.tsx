@@ -15,6 +15,7 @@ import type { LockedSubmission, OwnAnswer, Participant, Person } from "../types"
 import { CellEditor } from "./CellEditor";
 import { Leaderboard } from "./Leaderboard";
 import { MyAnswersDialog } from "./MyAnswersDialog";
+import { NanyanBrand } from "./NanyanBrand";
 import { RulesDialog } from "./RulesDialog";
 import { SubmitDialog } from "./SubmitDialog";
 
@@ -198,7 +199,11 @@ export function GamePage({
   return (
     <main className="game-shell">
       <header className="game-header">
-        <div className="mini-brand"><strong>兴趣</strong><b>Bingo</b></div>
+        <div className="header-brands">
+          <div className="mini-brand"><strong>兴趣</strong><b>Bingo</b></div>
+          <span className="brand-divider" aria-hidden="true" />
+          <NanyanBrand compact />
+        </div>
         <div className="participant-chip">
           <span>{initialData.participant.nickname}</span>
           <small>{initialData.participant.roleLabel}</small>

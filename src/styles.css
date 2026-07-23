@@ -105,6 +105,29 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
 .login-copy h1 { margin: 72px 0 22px; font-size: clamp(52px, 8vw, 96px); line-height: 0.94; letter-spacing: -0.075em; }
 .login-copy > p { color: var(--muted); font-size: 18px; line-height: 1.7; max-width: 30em; }
 .rule-note { margin-top: 36px; display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--good); }
+.nanyan-signature {
+  width: fit-content;
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+.nanyan-signature::before {
+  content: "";
+  width: 30px;
+  height: 1px;
+  background: var(--line-strong);
+}
+.nanyan-signature img {
+  width: 96px;
+  height: 96px;
+  border-radius: 12px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
 
 .login-form {
   background: var(--surface-raised);
@@ -152,8 +175,37 @@ button:disabled { cursor: not-allowed; opacity: 0.46; }
   align-items: center;
   border-bottom: 1px solid var(--line);
 }
+.header-brands { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .mini-brand { font-size: 21px; letter-spacing: -0.04em; }
 .mini-brand b { margin-left: 2px; font-size: 1.12em; }
+.brand-divider { width: 1px; height: 24px; background: var(--line); }
+.nanyan-brand-compact {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.nanyan-symbol {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(47, 145, 222, 0.12);
+}
+.nanyan-symbol img {
+  position: absolute;
+  top: -4px;
+  left: -15px;
+  width: 60px;
+  height: 60px;
+  max-width: none;
+}
 .participant-chip { margin-left: auto; margin-right: 12px; text-align: right; display: flex; flex-direction: column; }
 .participant-chip span { font-weight: 750; font-size: 14px; }
 .participant-chip small { color: var(--muted); font-size: 11px; }
@@ -458,8 +510,12 @@ td time { color: var(--muted); }
   .login-copy h1 { margin: 42px 0 18px; font-size: clamp(50px, 16vw, 76px); }
   .login-copy > p { font-size: 15px; }
   .rule-note { margin-top: 22px; }
+  .nanyan-signature { margin-top: 22px; }
+  .nanyan-signature img { width: 78px; height: 78px; }
   .login-form { padding: 24px; }
   .game-header { padding: 0 16px; }
+  .nanyan-brand-compact > span:last-child { display: none; }
+  .header-brands { gap: 9px; }
   .game-layout { padding: 28px 12px; }
   .board-intro { padding: 0 4px; }
   .board-intro h1 { font-size: 31px; }
@@ -541,6 +597,7 @@ td time { color: var(--muted); }
   .quick-rules ul { color: #c2cbc6; }
   .leaderboard li { border-color: #354039; }
   .search-field, .login-form input, .admin-login input { border-color: #66726c; }
+  .nanyan-signature img { mix-blend-mode: normal; box-shadow: 0 0 0 1px #354039; }
   th { background: #242d28; }
   th, td, .empty-submissions { border-color: #354039; }
 }
